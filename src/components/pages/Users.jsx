@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { auth, db } from '../../firebase/firebase';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import {
   Box,
   Typography,
@@ -29,6 +30,7 @@ import Sidebar from '../shared/Sidebar';
 import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 
 const Users = () => {
+  const { currentUser } = useAuth();
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState('');
   const [user, setUser] = useState(null);
@@ -39,18 +41,18 @@ const Users = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
-        await fetchUsers(currentUser);
-      } else {
-        navigate('/login');
-      }
-      setLoading(false);
-    });
+    if (!currentUser) {
+      navigate('/login');
+      return;
+    }
 
-    return () => unsubscribe();
-  }, [navigate]);
+    if (currentUser.role !== "admin") {
+      navigate('/');
+      return;
+    }
+
+    fetchUsers(currentUser);
+  }, [currentUser, navigate]);
 
   const fetchUsers = async (currentUser) => {
     try {
