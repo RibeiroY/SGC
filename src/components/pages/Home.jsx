@@ -1,81 +1,25 @@
-import React, { useEffect, useState } from 'react';
-import { auth, db } from '../../firebase/firebase';
+import React, { useEffect } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Box, Typography, CircularProgress, Button } from '@mui/material';
-import { doc, getDoc, query, collection, where, getDocs } from 'firebase/firestore';
+import { Box, Typography, Button } from '@mui/material';
 import Sidebar from '../shared/Sidebar';
+import { auth } from '../../firebase/firebase';
 
 const Home = () => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [isActive, setIsActive] = useState(null);
+  const { currentUser, userLoggedIn } = useAuth(); // Obtém o usuário do contexto
   const navigate = useNavigate();
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
-        await checkUserStatus(currentUser);
-      } else {
-        navigate('/login'); // Redireciona se não estiver autenticado
-      }
-    });
-
-    return () => unsubscribe();
-  }, [navigate]);
-
-  const checkUserStatus = async (currentUser) => {
-    try {
-      // Busca o usuário no Firestore baseado no email (pois username é ID no Firestore)
-      const q = query(collection(db, 'usernames'), where('email', '==', currentUser.email));
-      const querySnapshot = await getDocs(q);
-
-      if (!querySnapshot.empty) {
-        const userData = querySnapshot.docs[0].data(); // Pega o primeiro usuário encontrado
-        setIsActive(userData.isActive);
-      } else {
-        setIsActive(false); // Usuário não encontrado no Firestore
-      }
-    } catch (error) {
-      console.error('Erro ao buscar status do usuário:', error);
-      setIsActive(false); // Assume inativo em caso de erro
-    } finally {
-      setLoading(false); // Finaliza o estado de carregamento
+    if (!userLoggedIn) {
+      navigate('/login'); // Redireciona se não estiver autenticado
     }
-  };
+  }, [userLoggedIn, navigate]);
 
-  const handleLogout = async () => {
-    try {
-      await auth.signOut();
-      navigate('/login'); // Redireciona para a página de login
-    } catch (error) {
-      console.error('Erro ao sair:', error);
-    }
-  };
-
-  if (loading) {
-    return (
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '100vh',
-          backgroundColor: '#2B1432',
-          color: '#fff',
-        }}
-      >
-        <CircularProgress color="inherit" />
-        <Typography sx={{ mt: 2 }}>Carregando...</Typography>
-      </Box>
-    );
+  if (!userLoggedIn) {
+    return null;
   }
 
-  if (!user) {
-    return null; // Usuário não autenticado, navegado para login
-  }
-
-  if (isActive === false) {
+  if (currentUser?.isActive === false) {
     return (
       <Box
         sx={{
@@ -99,7 +43,10 @@ const Home = () => {
         <Button
           variant="contained"
           sx={{ mt: 3, backgroundColor: '#FFA500', color: '#fff', '&:hover': { backgroundColor: '#FF8C00' } }}
-          onClick={handleLogout}
+          onClick={async () => {
+            await auth.signOut();
+            navigate('/login');
+          }}
         >
           Sair
         </Button>
@@ -109,10 +56,7 @@ const Home = () => {
 
   return (
     <Box sx={{ display: 'flex' }}>
-      {/* Sidebar */}
       <Sidebar />
-
-      {/* Conteúdo principal */}
       <Box
         sx={{
           flex: 1,
@@ -123,7 +67,7 @@ const Home = () => {
         }}
       >
         <Typography variant="h4" sx={{ mb: 2 }}>
-          Olá, você é {user.displayName || 'Usuário'}!
+          Olá, {currentUser?.displayName || 'Usuário'}!
         </Typography>
       </Box>
     </Box>

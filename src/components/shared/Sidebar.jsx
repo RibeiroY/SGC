@@ -1,58 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Box, Button, Typography, IconButton, Drawer, Tooltip } from '@mui/material';
 import { Menu, Home, Person, Settings, Logout, Dashboard, ListAlt, Build, People } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { auth, db } from '../../firebase/firebase';
-import { getDocs, collection } from 'firebase/firestore';
-import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../../firebase/firebase';
+import { useAuth } from '../../contexts/AuthContext'; // ✅ Agora usa o contexto
 
 const Sidebar = () => {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
-  const [userUid, setUserUid] = useState(null);
-  const [userRole, setUserRole] = useState('user');
   const navigate = useNavigate();
+  const { currentUser, userLoggedIn } = useAuth(); // ✅ Obtém o usuário autenticado
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        console.log('Usuário autenticado:', user.uid);
-        setUserUid(user.uid);
-      } else {
-        console.warn('Nenhum usuário autenticado.');
-        setUserUid(null);
-      }
-    });
+  if (!userLoggedIn) {
+    return null; // Se o usuário não estiver logado, não renderiza a Sidebar
+  }
 
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    const fetchUserRole = async () => {
-      if (!userUid) return;
-      console.log('Buscando role para UID:', userUid);
-      try {
-        const usernamesCollection = collection(db, 'usernames');
-        const userQuerySnapshot = await getDocs(usernamesCollection);
-
-        let roleEncontrada = 'user';
-
-        userQuerySnapshot.forEach((doc) => {
-          if (doc.data().uid === userUid) {
-            roleEncontrada = doc.data().role || 'user';
-            console.log('Role encontrada no Firestore:', roleEncontrada);
-          }
-        });
-
-        setUserRole(roleEncontrada);
-      } catch (error) {
-        console.error('Erro ao buscar role do usuário:', error);
-      }
-    };
-
-    if (userUid) {
-      fetchUserRole();
-    }
-  }, [userUid]);
+  const userRole = currentUser?.role || 'user'; // ✅ Obtém a role do usuário do contexto
 
   const handleLogout = async () => {
     try {
@@ -67,6 +29,7 @@ const Sidebar = () => {
     setDrawerOpen(!isDrawerOpen);
   };
 
+  // ✅ Mantive a mesma lógica de permissionamento dos botões do seu código original
   const buttons = [
     { label: 'Início', icon: <Home />, path: '/' },
     userRole === 'admin' && { label: 'Dashboard', icon: <Dashboard />, path: '/dashboard', hideMobile: true },
@@ -75,10 +38,11 @@ const Sidebar = () => {
     userRole === 'admin' && { label: 'Usuários', icon: <People />, path: '/users' },
     { label: 'Perfil', icon: <Person />, path: '/profile' },
     { label: 'Configurações', icon: <Settings />, path: '/settings' },
-  ].filter(Boolean);
+  ].filter(Boolean); // ✅ Remove botões que não devem ser exibidos
 
   return (
     <>
+      {/* Drawer (menu lateral para telas menores) */}
       <Drawer anchor="left" open={isDrawerOpen} onClose={toggleDrawer}>
         <Box
           sx={{
@@ -95,14 +59,13 @@ const Sidebar = () => {
           <Typography variant="h6" sx={{ mb: 3 }}>
             Gerenciamento de TI
           </Typography>
-          {buttons.map(({ label, icon, path, action, hideMobile }) => (
+          {buttons.map(({ label, icon, path, hideMobile }) => (
             <Button
               key={label}
               variant="text"
               startIcon={icon}
               onClick={() => {
-                if (action) action();
-                else navigate(path);
+                navigate(path);
                 setDrawerOpen(false);
               }}
               sx={{
@@ -133,6 +96,7 @@ const Sidebar = () => {
         </Box>
       </Drawer>
 
+      {/* Sidebar (menu fixo para telas maiores) */}
       <Box
         sx={{
           display: { xs: 'none', md: 'flex' },
@@ -148,20 +112,16 @@ const Sidebar = () => {
           Gerenciamento de TI
         </Typography>
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-          {buttons.map(({ label, icon, path, action, hideMobile }) => (
+          {buttons.map(({ label, icon, path }) => (
             <Button
               key={label}
               variant="text"
               startIcon={icon}
-              onClick={() => {
-                if (action) action();
-                else navigate(path);
-              }}
+              onClick={() => navigate(path)}
               sx={{
                 color: '#fff',
                 width: '90%',
                 justifyContent: 'flex-start',
-                display: hideMobile ? { xs: 'none', md: 'flex' } : 'flex',
                 '&:hover': { backgroundColor: '#3A1E4B' },
               }}
             >
@@ -186,6 +146,7 @@ const Sidebar = () => {
         </Button>
       </Box>
 
+      {/* Ícones no menu pequeno (mobile) */}
       <Box
         sx={{
           display: { xs: 'flex', md: 'none' },
@@ -209,24 +170,19 @@ const Sidebar = () => {
             <Menu />
           </IconButton>
         </Tooltip>
-        {buttons.map(({ label, icon, path, action, hideMobile }) => (
-          !hideMobile && (
-            <Tooltip title={label} placement="right" key={label}>
-              <IconButton
-                sx={{
-                  color: '#fff',
-                  marginBottom: 2,
-                  '&:hover': { backgroundColor: '#3A1E4B' },
-                }}
-                onClick={() => {
-                  if (action) action();
-                  else navigate(path);
-                }}
-              >
-                {icon}
-              </IconButton>
-            </Tooltip>
-          )
+        {buttons.map(({ label, icon, path }) => (
+          <Tooltip title={label} placement="right" key={label}>
+            <IconButton
+              sx={{
+                color: '#fff',
+                marginBottom: 2,
+                '&:hover': { backgroundColor: '#3A1E4B' },
+              }}
+              onClick={() => navigate(path)}
+            >
+              {icon}
+            </IconButton>
+          </Tooltip>
         ))}
         <Tooltip title="Sair" placement="right">
           <IconButton

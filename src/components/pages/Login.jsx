@@ -1,82 +1,103 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, Box, Typography, Alert, Grid2, Link } from '@mui/material';
+import { TextField, Button, Box, Typography, Alert, Grid, Link, CircularProgress } from '@mui/material';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth, db } from '../../firebase/firebase';
 import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
-import { doc, updateDoc, getDocs, serverTimestamp, collection } from 'firebase/firestore'; // Firestore
+import { doc, updateDoc, getDocs, serverTimestamp, collection } from 'firebase/firestore';
+import { useAuth } from '../../contexts/AuthContext'; // Importa o contexto de autenticação
 import 'react-toastify/dist/ReactToastify.css';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false); // Estado de carregamento
+  const { userLoggedIn } = useAuth(); // Obtém estado do contexto
   const navigate = useNavigate();
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
-      if (currentUser) {
-        navigate('/Home');
-      }
-    });
-
-    return () => unsubscribe();
-  }, [navigate]);
+    if (userLoggedIn) {
+      navigate('/home'); // Se já estiver logado, redireciona
+    }
+  }, [userLoggedIn, navigate]);
 
   const handleLogin = async (event) => {
     event.preventDefault();
     setError('');
-  
+    setLoading(true); // Inicia o loading
+
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-  
+
       console.log("✅ Usuário autenticado:", user.email);
-  
-      // 🔍 Buscar o username no Firestore pelo email
+
+      // 🔍 Busca o username no Firestore
       const usersRef = collection(db, "usernames");
       const querySnapshot = await getDocs(usersRef);
       let foundUsername = null;
-  
+
       querySnapshot.forEach((doc) => {
         if (doc.data().email === user.email) {
-          foundUsername = doc.id; // O ID do documento é o username
+          foundUsername = doc.id;
         }
       });
-  
+
       if (!foundUsername) {
         console.error("❌ Username não encontrado no Firestore para email:", user.email);
+        setLoading(false);
         return;
       }
-  
+
       console.log("✅ Username correto encontrado:", foundUsername);
-  
-      // 🔄 Agora atualiza `lastLogin` no documento correto
+
+      // 🔄 Atualiza `lastLogin` no Firestore
       const userRef = doc(db, 'usernames', foundUsername);
       await updateDoc(userRef, {
         lastLogin: serverTimestamp(),
       });
-  
+
       console.log('✅ Último login atualizado:', new Date().toLocaleString());
-  
-      // Exibe o Toast de sucesso
+
+      // Exibe mensagem de sucesso
       toast.success('Login bem-sucedido!', {
         position: 'top-center',
-        autoClose: 3000,
+        autoClose: 2000,
       });
-  
-      // Redireciona para a página Home após o login
+
+      // Aguarda 2s e redireciona para Home
       setTimeout(() => {
         navigate('/home');
-      }, 3000);
+      }, 2000);
     } catch (err) {
       console.error('❌ Erro ao fazer login:', err);
       setError('Erro ao fazer login. Verifique os dados e tente novamente.');
+      setLoading(false);
     }
   };
 
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          minHeight: '100vh',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: '#2B1432',
+          color: '#fff',
+          flexDirection: 'column',
+        }}
+      >
+        <CircularProgress color="inherit" />
+        <Typography sx={{ mt: 2 }}>Autenticando...</Typography>
+      </Box>
+    );
+  }
+
   return (
-    <Grid2
+    <Grid
       container
       sx={{
         minHeight: '100vh',
@@ -86,7 +107,7 @@ const Login = () => {
         placeItems: 'center',
       }}
     >
-      <Grid2
+      <Grid
         xs={12}
         sm={8}
         md={4}
@@ -154,10 +175,10 @@ const Login = () => {
             </Link>
           </Typography>
         </Box>
-      </Grid2>
+      </Grid>
 
       <ToastContainer />
-    </Grid2>
+    </Grid>
   );
 };
 

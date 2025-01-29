@@ -12,17 +12,16 @@ export function useAuth() {
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [userLoggedIn, setUserLoggedIn] = useState(false);
-  const [isEmailUser, setIsEmailUser] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log("[AuthContext] Setting up auth state change listener"); // Log de depuração
+    console.log("[AuthContext] Configurando listener de autenticação...");
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       try {
-        console.log("[AuthContext] Auth state changed:", user); // Log de depuração
+        console.log("[AuthContext] Estado de autenticação mudou:", user);
         await initializeUser(user);
       } catch (error) {
-        console.error("[AuthContext] Error during auth state change:", error);
+        console.error("[AuthContext] Erro ao inicializar usuário:", error);
         setLoading(false);
       }
     });
@@ -30,47 +29,46 @@ export function AuthProvider({ children }) {
   }, []);
 
   async function initializeUser(user) {
+    if (!user) {
+      setCurrentUser(null);
+      setUserLoggedIn(false);
+      setLoading(false);
+      return;
+    }
+
     try {
-      if (user) {
-        const uid = user.uid;
-        console.log("[AuthContext] User UID:", uid); // Log de depuração
+      const uid = user.uid;
+      console.log("[AuthContext] UID do usuário:", uid);
 
-        // Consulta ao Firestore para buscar dados adicionais
-        const q = query(collection(db, "usernames"), where("uid", "==", uid));
-        const querySnapshot = await getDocs(q);
+      // 🔍 Busca o usuário no Firestore pelo UID
+      const q = query(collection(db, "usernames"), where("uid", "==", uid));
+      const querySnapshot = await getDocs(q);
 
-        if (!querySnapshot.empty) {
-          querySnapshot.forEach((doc) => {
-            const userData = doc.data();
-            setCurrentUser({ ...user, admin: userData.admin });
-          });
-        } else {
-          setCurrentUser(user);
-        }
+      if (!querySnapshot.empty) {
+        const userData = querySnapshot.docs[0].data();
+        console.log("[AuthContext] Dados do usuário encontrados:", userData);
 
-        // Verifica se o usuário usa e-mail/senha
-        const isEmail = user.providerData.some(
-          (provider) => provider.providerId === "password"
-        );
-        setIsEmailUser(isEmail);
-
-        setUserLoggedIn(true);
+        setCurrentUser({
+          ...user,
+          admin: userData.admin,
+          isActive: userData.isActive,
+          role: userData.role || "user", // 🔥 Garante que a role está correta
+        });
       } else {
-        setCurrentUser(null);
-        setUserLoggedIn(false);
+        setCurrentUser({ ...user, role: "user" }); // 🔥 Se não tiver role, assume "user"
       }
+
+      setUserLoggedIn(true);
     } catch (error) {
-      console.error("[AuthContext] Error initializing user:", error); // Log de erro
+      console.error("[AuthContext] Erro ao buscar dados do usuário:", error);
     } finally {
-      setLoading(false); // Garante que o estado de loading seja atualizado
+      setLoading(false);
     }
   }
 
   const value = {
     userLoggedIn,
-    isEmailUser,
     currentUser,
-    setCurrentUser,
   };
 
   return (
