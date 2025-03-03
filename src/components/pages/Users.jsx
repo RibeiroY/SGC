@@ -7,7 +7,7 @@ import { useUsers } from "../../hooks/useUsers"; // 📌 Hook personalizado para
 import { useAuth } from "../../contexts/AuthContext"; // 📌 Pega o usuário autenticado
 
 const Users = () => {
-    const { users, loading, toggleUserActive, updateUserRole } = useUsers();
+    const { users, loading, toggleUserActive, updateUserRole, updateUserSetor } = useUsers();
     const { currentUser } = useAuth();
     const [search, setSearch] = useState("");
     const isMobile = useMediaQuery("(max-width:600px)");
@@ -31,7 +31,7 @@ const Users = () => {
     return (
         <Box sx={{ display: "flex" }}>
             <Sidebar />
-            <Box sx={{ flex: 1, padding: 3, backgroundColor: "#f4f4f4", minHeight: "100vh" }}>
+            <Box sx={{ flex: 1, padding: 3, backgroundColor: "#f4f4f4", minHeight: "100vh", marginLeft: { md:30} }}>
                 <Typography variant="h4" gutterBottom>Gerenciar Usuários</Typography>
 
                 <TextField
@@ -52,6 +52,7 @@ const Users = () => {
                                     key={user.id}
                                     user={user}
                                     updateUserRole={updateUserRole}
+                                    updateUserSetor={updateUserSetor}
                                     toggleUserActive={toggleUserActive}
                                     currentUser={currentUser}
                                 />
@@ -62,7 +63,7 @@ const Users = () => {
                     </Box>
                 ) : (
                     // 💻 Exibição de usuários em tabela (desktop)
-                    <UserTable users={filteredUsers} updateUserRole={updateUserRole} toggleUserActive={toggleUserActive} currentUser={currentUser} />
+                    <UserTable users={filteredUsers} updateUserRole={updateUserRole} toggleUserActive={toggleUserActive} currentUser={currentUser} updateUserSetor={updateUserSetor}  />
                 )}
             </Box>
         </Box>

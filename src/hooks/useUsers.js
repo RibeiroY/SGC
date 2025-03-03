@@ -73,5 +73,19 @@ export const useUsers = () => {
         }
     };
 
-    return { users, loading, toggleUserActive, updateUserRole };
+    const updateUserSetor = async (userId, newSetor) => {
+        try {
+            const userRef = doc(db, "usernames", userId);
+            await updateDoc(userRef, { setor: newSetor });
+            setUsers((prevUsers) =>
+                prevUsers.map((user) =>
+                    user.id === userId ? { ...user, setor: newSetor } : user
+                )
+            );
+        } catch (error) {
+            console.error("Erro ao atualizar setor do usuário:", error);
+        }
+    };
+
+    return { users, loading, toggleUserActive, updateUserRole, updateUserSetor };
 };

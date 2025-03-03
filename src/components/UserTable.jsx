@@ -1,7 +1,7 @@
 import React from "react";
 import { TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody, Select, MenuItem, Switch } from "@mui/material";
 
-const UserTable = ({ users, updateUserRole, toggleUserActive, currentUser }) => {
+const UserTable = ({ users, updateUserRole, toggleUserActive, updateUserSetor, currentUser }) => {
     return (
         <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3, overflow: "hidden" }}>
             <Table>
@@ -13,6 +13,7 @@ const UserTable = ({ users, updateUserRole, toggleUserActive, currentUser }) => 
                         <TableCell sx={{ color: "white", fontWeight: "bold" }}>Data de Criação</TableCell>
                         <TableCell sx={{ color: "white", fontWeight: "bold" }}>Último Login</TableCell>
                         <TableCell sx={{ color: "white", fontWeight: "bold" }}>Função</TableCell>
+                        <TableCell sx={{ color: "white", fontWeight: "bold" }}>Setor</TableCell> {/* Novo campo */}
                         <TableCell sx={{ color: "white", fontWeight: "bold" }}>Ativo</TableCell>
                     </TableRow>
                 </TableHead>
@@ -21,7 +22,7 @@ const UserTable = ({ users, updateUserRole, toggleUserActive, currentUser }) => 
                         <TableRow
                             key={user.id}
                             sx={{
-                                backgroundColor: index % 2 === 0 ? "#EDE7F6" : "#D1C4E9", // Alterna entre dois tons de lilás suaves
+                                backgroundColor: index % 2 === 0 ? "#EDE7F6" : "#D1C4E9",
                             }}
                         >
                             <TableCell>{user.displayName || "N/A"}</TableCell>
@@ -38,6 +39,26 @@ const UserTable = ({ users, updateUserRole, toggleUserActive, currentUser }) => 
                                     <MenuItem value="user">Usuário</MenuItem>
                                     <MenuItem value="technician">Técnico</MenuItem>
                                     <MenuItem value="admin">Admin</MenuItem>
+                                    <MenuItem value="Financeiro">Financeiro</MenuItem>
+                                    <MenuItem value="RH">RH</MenuItem>
+                                    <MenuItem value="Marketing">Marketing</MenuItem>
+                                    <MenuItem value="Vendas">Vendas</MenuItem>
+                                    <MenuItem value="Recepção">Recepção</MenuItem>
+                                </Select>
+                            </TableCell>
+                            <TableCell>
+                                <Select
+                                    value={user.setor || ''}
+                                    onChange={(e) => updateUserSetor(user.id, e.target.value)}
+                                >
+                                    <MenuItem value="TI">TI</MenuItem>
+                                    <MenuItem value="Administração">Administração</MenuItem>
+                                    <MenuItem value="Jurídico">Jurídico</MenuItem>
+                                    <MenuItem value="Financeiro">Financeiro</MenuItem>
+                                    <MenuItem value="RH">RH</MenuItem>
+                                    <MenuItem value="Marketing">Marketing</MenuItem>
+                                    <MenuItem value="Vendas">Vendas</MenuItem>
+                                    <MenuItem value="Recepção">Recepção</MenuItem>
                                 </Select>
                             </TableCell>
                             <TableCell>

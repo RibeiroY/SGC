@@ -5,7 +5,7 @@ import EmailIcon from "@mui/icons-material/Email";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import WorkIcon from "@mui/icons-material/Work";
 
-const UserCard = ({ user, updateUserRole, toggleUserActive, currentUser }) => {
+const UserCard = ({ user, updateUserRole, toggleUserActive, updateUserSetor, currentUser }) => {
     return (
         <Card
             sx={{
@@ -67,10 +67,28 @@ const UserCard = ({ user, updateUserRole, toggleUserActive, currentUser }) => {
                         <MenuItem value="admin">Admin</MenuItem>
                     </Select>
                 </Box>
-            </Box>
 
-            {/* Status Ativo/Inativo */}
-            <Box>
+                {/* Setor */}
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 1 }}>
+                    <WorkIcon fontSize="small" sx={{ color: "#6A1B9A" }} />
+                    <Select
+                        value={user.setor || ''} 
+                        onChange={(e) => updateUserSetor(user.id, e.target.value)}
+                        fullWidth
+                        size="small"
+                        sx={{ backgroundColor: "#fff", borderRadius: 2 }}
+                    >
+                        <MenuItem value="TI">TI</MenuItem>
+                        <MenuItem value="Administração">Administração</MenuItem>
+                        <MenuItem value="Jurídico">Jurídico</MenuItem>
+                        <MenuItem value="Financeiro">Financeiro</MenuItem>
+                        <MenuItem value="RH">RH</MenuItem>
+                        <MenuItem value="Marketing">Marketing</MenuItem>
+                        <MenuItem value="Vendas">Vendas</MenuItem>
+                        <MenuItem value="Recepção">Recepção</MenuItem>
+                    </Select>
+                </Box>
+
                 <Switch
                     checked={user.isActive ?? true}
                     onChange={() => toggleUserActive(user.id, user.isActive ?? true)}

@@ -50,6 +50,7 @@ export function useRegister() { // 🔍 Certifique-se de estar exportando corret
                 role: "user", // Usuário inicia como "user"
                 createdAt: serverTimestamp(),
                 isActive: false, // Começa como inativo
+                setor: null, //Setor do usuário, inicialmente atribuído como null
             });
 
             // 🔴 **Evita deslogar automaticamente após o registro**

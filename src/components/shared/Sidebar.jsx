@@ -1,20 +1,38 @@
 import React, { useState } from 'react';
-import { Box, Button, Typography, IconButton, Drawer, Tooltip } from '@mui/material';
-import { Menu, Home, Person, Settings, Logout, Dashboard, ListAlt, Build, People } from '@mui/icons-material';
+import {
+  Box,
+  Button,
+  Typography,
+  IconButton,
+  Drawer,
+  AppBar,
+  Toolbar,
+} from '@mui/material';
+import {
+  Menu,
+  Home,
+  Person,
+  Settings,
+  Logout,
+  Dashboard,
+  ListAlt,
+  Build,
+  People,
+} from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../../firebase/firebase';
-import { useAuth } from '../../contexts/AuthContext'; // ✅ Agora usa o contexto
+import { useAuth } from '../../contexts/AuthContext';
 
 const Sidebar = () => {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
   const navigate = useNavigate();
-  const { currentUser, userLoggedIn } = useAuth(); // ✅ Obtém o usuário autenticado
+  const { currentUser, userLoggedIn } = useAuth();
 
   if (!userLoggedIn) {
     return null; // Se o usuário não estiver logado, não renderiza a Sidebar
   }
 
-  const userRole = currentUser?.role || 'user'; // ✅ Obtém a role do usuário do contexto
+  const userRole = currentUser?.role || 'user';
 
   const handleLogout = async () => {
     try {
@@ -29,19 +47,42 @@ const Sidebar = () => {
     setDrawerOpen(!isDrawerOpen);
   };
 
-  // ✅ Mantive a mesma lógica de permissionamento dos botões do seu código original
+  // Botões da sidebar
   const buttons = [
     { label: 'Início', icon: <Home />, path: '/' },
     userRole === 'admin' && { label: 'Dashboard', icon: <Dashboard />, path: '/dashboard', hideMobile: true },
-    { label: 'Chamados', icon: <ListAlt />, path: '/chamados' },
-    (userRole === 'admin' || userRole === 'technician') && { label: 'Equipamentos', icon: <Build />, path: '/equipamentos' },
+    { label: 'Chamados', icon: <ListAlt />, path: '/Chamados' },
+    (userRole === 'admin' || userRole === 'technician') && { label: 'Equipamentos', icon: <Build />, path: '/equipments' },
     userRole === 'admin' && { label: 'Usuários', icon: <People />, path: '/users' },
     { label: 'Perfil', icon: <Person />, path: '/profile' },
     { label: 'Configurações', icon: <Settings />, path: '/settings' },
-  ].filter(Boolean); // ✅ Remove botões que não devem ser exibidos
+  ].filter(Boolean);
 
   return (
     <>
+      {/* Header Bar para dispositivos móveis */}
+      <AppBar
+        position="fixed"
+        sx={{
+          display: { xs: 'block', md: 'none' }, // Exibe apenas em dispositivos móveis
+          backgroundColor: '#2B1432',
+        }}
+      >
+        <Toolbar>
+          <IconButton
+            edge="start"
+            color="inherit"
+            aria-label="menu"
+            onClick={toggleDrawer}
+          >
+            <Menu />
+          </IconButton>
+          <Typography variant="h6" sx={{ flexGrow: 1, textAlign: 'center' }}>
+            Gerenciamento de TI
+          </Typography>
+        </Toolbar>
+      </AppBar>
+
       {/* Drawer (menu lateral para telas menores) */}
       <Drawer anchor="left" open={isDrawerOpen} onClose={toggleDrawer}>
         <Box
@@ -99,13 +140,17 @@ const Sidebar = () => {
       {/* Sidebar (menu fixo para telas maiores) */}
       <Box
         sx={{
-          display: { xs: 'none', md: 'flex' },
+          position: 'fixed',
+          top: 0,
+          left: 0,
           width: 250,
           height: '100vh',
           backgroundColor: '#2B1432',
-          flexDirection: 'column',
           color: '#fff',
+          display: { xs: 'none', md: 'flex' }, // Oculta a sidebar em telas pequenas
+          flexDirection: 'column',
           paddingTop: 2,
+          zIndex: 10,
         }}
       >
         <Typography variant="h6" sx={{ mb: 3, textAlign: 'center' }}>
@@ -144,58 +189,6 @@ const Sidebar = () => {
         >
           Sair
         </Button>
-      </Box>
-
-      {/* Ícones no menu pequeno (mobile) */}
-      <Box
-        sx={{
-          display: { xs: 'flex', md: 'none' },
-          width: 70,
-          height: '100vh',
-          backgroundColor: '#2B1432',
-          flexDirection: 'column',
-          alignItems: 'center',
-          paddingTop: 2,
-        }}
-      >
-        <Tooltip title="Menu" placement="right">
-          <IconButton
-            sx={{
-              color: '#fff',
-              marginBottom: 2,
-              '&:hover': { backgroundColor: '#3A1E4B' },
-            }}
-            onClick={toggleDrawer}
-          >
-            <Menu />
-          </IconButton>
-        </Tooltip>
-        {buttons.map(({ label, icon, path }) => (
-          <Tooltip title={label} placement="right" key={label}>
-            <IconButton
-              sx={{
-                color: '#fff',
-                marginBottom: 2,
-                '&:hover': { backgroundColor: '#3A1E4B' },
-              }}
-              onClick={() => navigate(path)}
-            >
-              {icon}
-            </IconButton>
-          </Tooltip>
-        ))}
-        <Tooltip title="Sair" placement="right">
-          <IconButton
-            sx={{
-              color: '#fff',
-              marginBottom: 2,
-              '&:hover': { backgroundColor: '#3A1E4B' },
-            }}
-            onClick={handleLogout}
-          >
-            <Logout />
-          </IconButton>
-        </Tooltip>
       </Box>
     </>
   );
