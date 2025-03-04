@@ -7,6 +7,7 @@ import Home from "./components/pages/Home";
 import Equipments from "./components/pages/Equipments";
 import Chamados from "./components/pages/Chamados";
 import ChamadoDetalhes from "./components/pages/ChamadoDetalhes";
+import Dashboard from "./components/pages/Dashboard";
 //import UserProfile from "./components/UserProfile";
 
 
@@ -43,6 +44,10 @@ const Routes = () => {
     {
       path: "/chamados/:id", // Rota para a página de detalhes do chamado
       element: <ChamadoDetalhes />,
+    },
+    {
+      path: "/dashboard",
+      element: <Dashboard />,
     }
     /*{
       path: "/profile",

@@ -9,7 +9,8 @@ import {
   Select, 
   MenuItem, 
   FormControl, 
-  InputLabel 
+  InputLabel,
+  Divider 
 } from '@mui/material';
 import { db } from '../../firebase/firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
@@ -150,7 +151,7 @@ const ChamadoDetalhes = () => {
                 >
                     Ordem de serviço: {chamado.id}
                 </Typography>
-
+                <Divider />
                 {/* Detalhes do Chamado */}
                 <Paper 
                     sx={{ 
@@ -167,6 +168,7 @@ const ChamadoDetalhes = () => {
                     >
                         Assunto da OS: {chamado.titulo || "N/A"}
                     </Typography>
+                    <Divider />
                     <Typography 
                         variant="h6" 
                         sx={{ fontWeight: 'bold', mb: 2, color: '#6A1B9A' }}
@@ -176,6 +178,7 @@ const ChamadoDetalhes = () => {
                     <Typography sx={{ mb: 2, color: 'text.secondary' }}>
                         {chamado.descricao}
                     </Typography>
+                    <Divider />
                     <Typography 
                         variant="h6" 
                         sx={{ fontWeight: 'bold', mb: 2, color: '#6A1B9A' }}
@@ -185,7 +188,7 @@ const ChamadoDetalhes = () => {
                     <Typography sx={{ mb: 2, color: 'text.secondary' }}>
                         {chamado.equipamento}
                     </Typography>
-
+                    <Divider />
                     {/* Status do Chamado */}
                     <Typography 
                         variant="h6" 
@@ -218,7 +221,7 @@ const ChamadoDetalhes = () => {
                             {status}
                         </Typography>
                     )}
-
+                    <Divider />
                     {/* Prioridade do Chamado */}
                     <Typography 
                         variant="h6" 
@@ -259,7 +262,7 @@ const ChamadoDetalhes = () => {
                             {prioridade}
                         </Typography>
                     )}
-
+                    <Divider />
                     {/* Tipo do Chamado */}
                     <Typography 
                         variant="h6" 
@@ -292,7 +295,7 @@ const ChamadoDetalhes = () => {
                         </Typography>
                     )}
                 </Paper>
-
+                <Divider />
                 {/* Bate-papo */}
                 <Paper 
                     sx={{ 
@@ -308,7 +311,7 @@ const ChamadoDetalhes = () => {
                     >
                         Bate-papo
                     </Typography>
-
+                    <Divider />
                     {/* Lista de Mensagens com balões */}
                     <Box 
                         sx={{ 
@@ -362,7 +365,7 @@ const ChamadoDetalhes = () => {
                             })
                         )}
                     </Box>
-
+                    <Divider sx={{ mb: 2 }} /> 
                     {/* Campo para enviar nova mensagem */}
                     <Box sx={{ display: 'flex', gap: 2 }}>
                         <TextField
