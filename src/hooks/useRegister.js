@@ -4,7 +4,7 @@ import { auth, db } from "../firebase/firebase";
 import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 
-export function useRegister() { // 🔍 Certifique-se de estar exportando corretamente
+export function useRegister() { // Certifique-se de estar exportando corretamente
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
@@ -26,7 +26,7 @@ export function useRegister() { // 🔍 Certifique-se de estar exportando corret
 
         setLoading(true);
         try {
-            // 🔍 Verifica se o username já existe no Firestore
+            // Verifica se o username já existe no Firestore
             const usernameDoc = await getDoc(doc(db, "usernames", username));
             if (usernameDoc.exists()) {
                 setError("Este username já está em uso. Por favor, escolha outro.");
@@ -34,14 +34,14 @@ export function useRegister() { // 🔍 Certifique-se de estar exportando corret
                 return;
             }
 
-            // 🔄 Criação do usuário no Firebase Authentication
+            // Criação do usuário no Firebase Authentication
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
-            // 🔄 Atualiza o displayName do usuário
+            // Atualiza o displayName do usuário
             await updateProfile(user, { displayName: name });
 
-            // 🔄 Salva os dados no Firestore
+            // Salva os dados no Firestore
             await setDoc(doc(db, "usernames", username), {
                 uid: user.uid,
                 username,
@@ -50,18 +50,17 @@ export function useRegister() { // 🔍 Certifique-se de estar exportando corret
                 role: "user", // Usuário inicia como "user"
                 createdAt: serverTimestamp(),
                 isActive: false, // Começa como inativo
-                setor: null, //Setor do usuário, inicialmente atribuído como null
+                setor: null, // Setor do usuário, inicialmente atribuído como null
             });
 
-            // 🔴 **Evita deslogar automaticamente após o registro**
-            // auth.signOut();  (🔥 Removido para evitar UX ruim)
+            // Desloga o usuário automaticamente após o registro
+            await auth.signOut();
 
             setSuccess("Cadastro realizado com sucesso! Redirecionando...");
-
-            // ⏳ Redireciona para login após 2 segundos
+            // Redireciona para login após 2 segundos
             setTimeout(() => navigate("/login"), 2000);
         } catch (err) {
-            console.error("❌ Erro ao registrar:", err);
+            console.error("Erro ao registrar:", err);
 
             switch (err.code) {
                 case "auth/email-already-in-use":

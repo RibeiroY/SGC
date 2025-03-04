@@ -106,9 +106,9 @@ const Equipments = () => {
 
     if (equipmentsLoading) {
         return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', flexDirection: 'column' }}>
-                <CircularProgress color="primary" sx={{ mb: 2 }} />
-                <Typography variant="h6" color="primary">Carregando dados...</Typography>
+            <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh", backgroundColor: "#2B1432", color: "#fff" }}>
+                <CircularProgress color="inherit" />
+                <Typography sx={{ mt: 2 }}>Carregando...</Typography>
             </Box>
         );
     }
@@ -158,7 +158,6 @@ const Equipments = () => {
                             {/* Botão de Buscar */}
                             <Button
                                 variant="contained"
-                                color="primary"
                                 onClick={handleSearchByCode}
                                 sx={{
                                     borderRadius: 2,
@@ -167,6 +166,8 @@ const Equipments = () => {
                                     textTransform: 'none',
                                     boxShadow: 2,
                                     transition: 'all 0.3s ease',
+                                    backgroundColor: '#F96822', // Cor laranja
+                                    color: '#fff',
                                     flex: 1, // Ocupa o espaço disponível
                                     '&:hover': {
                                         boxShadow: 4,

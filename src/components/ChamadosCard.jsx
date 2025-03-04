@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Card, CardContent, Typography, Button, Avatar, Chip } from '@mui/material';
+import { Box, Card, Typography, Button, Avatar, Chip } from '@mui/material';
 import AssignmentIcon from '@mui/icons-material/Assignment'; // Ícone para chamados
 import { useNavigate } from 'react-router-dom';
 
@@ -19,11 +19,11 @@ const ChamadosCard = ({ chamado }) => {
     // Define a cor da borda com base no status
     const getBorderColor = (status) => {
         switch (status) {
-            case 'aberto':
+            case 'Aberto':
                 return "#4CAF50"; // Verde
-            case 'em atendimento':
+            case 'Em Atendimento':
                 return "#FFA726"; // Laranja
-            case 'fechado':
+            case 'Fechado':
                 return "#F44336"; // Vermelho
             default:
                 return "#9E9E9E"; // Cinza (fallback)
@@ -33,11 +33,11 @@ const ChamadosCard = ({ chamado }) => {
     // Define o texto e a cor do Chip com base no status
     const getStatusInfo = (status) => {
         switch (status) {
-            case 'aberto':
+            case 'Aberto':
                 return { label: "Aberto", color: "success" }; // Verde
-            case 'em atendimento':
+            case 'Em Atendimento':
                 return { label: "Em Atendimento", color: "warning" }; // Laranja
-            case 'fechado':
+            case 'Fechado':
                 return { label: "Fechado", color: "error" }; // Vermelho
             default:
                 return { label: "Desconhecido", color: "default" }; // Fallback
@@ -50,47 +50,76 @@ const ChamadosCard = ({ chamado }) => {
         <Card
             sx={{
                 mb: 2,
-                p: 2,
+                p: 3,
                 borderRadius: 3,
                 boxShadow: 3,
                 display: "flex",
                 alignItems: "center",
-                gap: 2,
-                backgroundColor: "#FAFAFA",
+                gap: 3,
+                backgroundColor: "#FFFFFF",
                 borderLeft: `6px solid ${getBorderColor(chamado.status)}`,
+                transition: "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out",
                 "&:hover": {
                     transform: "scale(1.02)",
-                    transition: "0.2s ease-in-out",
+                    boxShadow: 6,
                 },
             }}
         >
             {/* Avatar com o ícone do chamado */}
-            <Avatar sx={{ bgcolor: "#3F51B5", width: 50, height: 50 }}>
-                <AssignmentIcon />
+            <Avatar
+                sx={{
+                    bgcolor: "#3F51B5",
+                    width: 60,
+                    height: 60,
+                    boxShadow: 2,
+                }}
+            >
+                <AssignmentIcon fontSize="medium" />
             </Avatar>
 
             {/* Conteúdo do card */}
             <Box sx={{ flexGrow: 1 }}>
-                <Typography variant="h6" sx={{ fontWeight: "bold", color: "#303F9F" }}>
+                {/* Título do chamado */}
+                <Typography
+                    variant="h6"
+                    sx={{
+                        fontWeight: "bold",
+                        color: "#303F9F",
+                        mb: 1,
+                    }}
+                >
                     {chamado.titulo || "Chamado sem título"}
                 </Typography>
 
                 {/* Código do equipamento */}
-                <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+                <Typography
+                    variant="body2"
+                    color="textSecondary"
+                    sx={{ mb: 2 }}
+                >
                     Equipamento: {chamado.equipamento || "N/A"}
                 </Typography>
 
                 {/* Status e prioridade */}
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 2 }}>
+                <Box
+                    sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        mb: 2,
+                    }}
+                >
                     <Chip
                         label={statusInfo.label}
                         color={statusInfo.color}
                         size="small"
+                        sx={{ fontWeight: "bold" }}
                     />
                     <Chip
                         label={`Prioridade: ${chamado.prioridade || "N/A"}`}
                         color="warning"
                         size="small"
+                        sx={{ fontWeight: "bold" }}
                     />
                 </Box>
 
@@ -100,6 +129,16 @@ const ChamadosCard = ({ chamado }) => {
                     color="primary"
                     size="small"
                     onClick={() => handleVerDetalhes(chamado.id)}
+                    sx={{
+                        borderRadius: 2,
+                        textTransform: "none",
+                        fontWeight: "bold",
+                        boxShadow: 2,
+                        "&:hover": {
+                            boxShadow: 4,
+                            backgroundColor: "#1565C0",
+                        },
+                    }}
                 >
                     Ver Detalhes
                 </Button>

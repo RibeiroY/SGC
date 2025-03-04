@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { TextField, Button, Alert, Box, Typography, Link } from "@mui/material";
+import React, { useState, useEffect } from "react";
+import { TextField, Button, Box, Typography, Link } from "@mui/material";
+import { useSnackbar } from 'notistack'; // Importe o hook do notistack
 
 const RegisterForm = ({ onSubmit, error, success }) => {
     const [name, setName] = useState("");
@@ -7,6 +8,17 @@ const RegisterForm = ({ onSubmit, error, success }) => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const { enqueueSnackbar } = useSnackbar(); // Hook para disparar notificações
+
+    // Efeito para exibir notificações de erro ou sucesso
+    useEffect(() => {
+        if (error) {
+            enqueueSnackbar(error, { variant: 'error' }); // Notificação de erro
+        }
+        if (success) {
+            enqueueSnackbar(success, { variant: 'success' }); // Notificação de sucesso
+        }
+    }, [error, success, enqueueSnackbar]);
 
     const handleSubmit = (event) => {
         event.preventDefault();
@@ -19,9 +31,6 @@ const RegisterForm = ({ onSubmit, error, success }) => {
             <Typography variant="h5" align="center" gutterBottom>
                 Criar Conta
             </Typography>
-
-            {error && <Alert severity="error">{error}</Alert>}
-            {success && <Alert severity="success">{success}</Alert>}
 
             <TextField label="Nome Completo" fullWidth margin="normal" value={name} onChange={(e) => setName(e.target.value)} />
             <TextField label="Username" fullWidth margin="normal" value={username} onChange={(e) => setUsername(e.target.value)} />

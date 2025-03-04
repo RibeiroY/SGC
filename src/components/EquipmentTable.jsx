@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Select, MenuItem } from '@mui/material';
+import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Select, MenuItem } from '@mui/material';
 
 const EquipmentTable = ({ equipments, updateEquipment }) => {
     const computers = equipments.filter(equipment => equipment.type === 'computador');
@@ -34,7 +34,7 @@ const EquipmentTable = ({ equipments, updateEquipment }) => {
                                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Memória RAM</TableCell>
                                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Processador</TableCell>
                                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Armazenamento</TableCell>
-                                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Setor</TableCell> {/* Nova coluna Setor */}
+                                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Setor</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -43,6 +43,10 @@ const EquipmentTable = ({ equipments, updateEquipment }) => {
                                     key={equipment.id}
                                     sx={{
                                         backgroundColor: index % 2 === 0 ? "#EDE7F6" : "#D1C4E9",
+                                        transition: "background-color 0.2s ease-in-out",
+                                        "&:hover": {
+                                            backgroundColor: "#B39DDB", // Cor de hover
+                                        },
                                     }}
                                 >
                                     <TableCell>{equipment.code}</TableCell>
@@ -56,6 +60,13 @@ const EquipmentTable = ({ equipments, updateEquipment }) => {
                                             onChange={(e) => handleSetorChange(equipment.id, e.target.value)}
                                             fullWidth
                                             size="small"
+                                            sx={{
+                                                borderRadius: 2,
+                                                backgroundColor: "#FFFFFF",
+                                                "& .MuiOutlinedInput-notchedOutline": {
+                                                    borderColor: "#6A1B9A",
+                                                },
+                                            }}
                                         >
                                             <MenuItem value="TI">TI</MenuItem>
                                             <MenuItem value="Administração">Administração</MenuItem>
@@ -92,7 +103,7 @@ const EquipmentTable = ({ equipments, updateEquipment }) => {
                                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Código</TableCell>
                                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Nome</TableCell>
                                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Modelo</TableCell>
-                                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Setor</TableCell> {/* Nova coluna Setor */}
+                                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Setor</TableCell>
                                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Tipo de Impressão</TableCell>
                             </TableRow>
                         </TableHead>
@@ -102,6 +113,10 @@ const EquipmentTable = ({ equipments, updateEquipment }) => {
                                     key={equipment.id}
                                     sx={{
                                         backgroundColor: index % 2 === 0 ? "#EDE7F6" : "#D1C4E9",
+                                        transition: "background-color 0.2s ease-in-out",
+                                        "&:hover": {
+                                            backgroundColor: "#B39DDB", // Cor de hover
+                                        },
                                     }}
                                 >
                                     <TableCell>{equipment.code}</TableCell>
@@ -113,6 +128,13 @@ const EquipmentTable = ({ equipments, updateEquipment }) => {
                                             onChange={(e) => handleSetorChange(equipment.id, e.target.value)}
                                             fullWidth
                                             size="small"
+                                            sx={{
+                                                borderRadius: 2,
+                                                backgroundColor: "#FFFFFF",
+                                                "& .MuiOutlinedInput-notchedOutline": {
+                                                    borderColor: "#6A1B9A",
+                                                },
+                                            }}
                                         >
                                             <MenuItem value="TI">TI</MenuItem>
                                             <MenuItem value="Administração">Administração</MenuItem>
@@ -151,7 +173,7 @@ const EquipmentTable = ({ equipments, updateEquipment }) => {
                                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Nome</TableCell>
                                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Modelo</TableCell>
                                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Marca</TableCell>
-                                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Setor</TableCell> {/* Nova coluna Setor */}
+                                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Setor</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -160,6 +182,10 @@ const EquipmentTable = ({ equipments, updateEquipment }) => {
                                     key={equipment.id}
                                     sx={{
                                         backgroundColor: index % 2 === 0 ? "#EDE7F6" : "#D1C4E9",
+                                        transition: "background-color 0.2s ease-in-out",
+                                        "&:hover": {
+                                            backgroundColor: "#B39DDB", // Cor de hover
+                                        },
                                     }}
                                 >
                                     <TableCell>{equipment.code}</TableCell>
@@ -172,6 +198,13 @@ const EquipmentTable = ({ equipments, updateEquipment }) => {
                                             onChange={(e) => handleSetorChange(equipment.id, e.target.value)}
                                             fullWidth
                                             size="small"
+                                            sx={{
+                                                borderRadius: 2,
+                                                backgroundColor: "#FFFFFF",
+                                                "& .MuiOutlinedInput-notchedOutline": {
+                                                    borderColor: "#6A1B9A",
+                                                },
+                                            }}
                                         >
                                             <MenuItem value="TI">TI</MenuItem>
                                             <MenuItem value="Administração">Administração</MenuItem>

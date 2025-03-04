@@ -6,7 +6,6 @@ import {
   Paper, 
   TextField, 
   Button, 
-  Avatar, 
   Select, 
   MenuItem, 
   FormControl, 
@@ -18,8 +17,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import Sidebar from '../shared/Sidebar';
 import useChats from '../../hooks/useChats'; // Hook atualizado do chat
 import { format } from 'date-fns'; // Biblioteca para formatação de datas
-import { toast } from 'react-toastify'; // Para exibir feedback visual
-import 'react-toastify/dist/ReactToastify.css';
+import { useSnackbar } from 'notistack';
 
 const ChamadoDetalhes = () => {
     const { id } = useParams(); // Obtém o ID do chamado da URL
@@ -30,6 +28,8 @@ const ChamadoDetalhes = () => {
     const [newMessage, setNewMessage] = useState(''); // Estado para armazenar a nova mensagem
     const [status, setStatus] = useState(''); // Estado para o status do chamado
     const [prioridade, setPrioridade] = useState(''); // Estado para a prioridade do chamado
+    const [tipo, setTipo] = useState(''); // Estado para o tipo do chamado
+    const { enqueueSnackbar } = useSnackbar();
 
     // Verifica se o usuário é técnico ou administrador
     const isTechnicianOrAdmin = currentUser?.role === 'technician' || currentUser?.role === 'admin';
@@ -51,6 +51,7 @@ const ChamadoDetalhes = () => {
                 setChamado({ id: docSnap.id, ...data });
                 setStatus(data.status); // Define o estado inicial do status
                 setPrioridade(data.prioridade); // Define o estado inicial da prioridade
+                setTipo(data.tipo); // Define o estado inicial do tipo
             } else {
                 console.log("Chamado não encontrado!");
             }
@@ -65,9 +66,9 @@ const ChamadoDetalhes = () => {
             const chamadoRef = doc(db, 'chamados', id);
             await updateDoc(chamadoRef, { status: newStatus });
             setStatus(newStatus); // Atualiza o estado local
-            toast.success('Status atualizado com sucesso!');
+            enqueueSnackbar('Status atualizado com sucesso!', { variant: 'success' });
         } catch (error) {
-            toast.error('Erro ao atualizar o status.');
+            enqueueSnackbar('Erro ao atualizar o status.', { variant: 'error' });
         }
     };
 
@@ -77,15 +78,33 @@ const ChamadoDetalhes = () => {
             const chamadoRef = doc(db, 'chamados', id);
             await updateDoc(chamadoRef, { prioridade: newPrioridade });
             setPrioridade(newPrioridade); // Atualiza o estado local
-            toast.success('Prioridade atualizada com sucesso!');
+            enqueueSnackbar('Prioridade atualizada com sucesso!', { variant: 'success' });
         } catch (error) {
-            toast.error('Erro ao atualizar a prioridade.');
+            enqueueSnackbar('Erro ao atualizar a prioridade.', { variant: 'error' });
+        }
+    };
+
+    // Função para atualizar o tipo do chamado
+    const handleTipoChange = async (newTipo) => {
+        try {
+            const chamadoRef = doc(db, 'chamados', id);
+            await updateDoc(chamadoRef, { tipo: newTipo });
+            setTipo(newTipo); // Atualiza o estado local
+            enqueueSnackbar('Tipo atualizado com sucesso!', { variant: 'success' });
+        } catch (error) {
+            enqueueSnackbar('Erro ao atualizar o tipo.', { variant: 'error' });
         }
     };
 
     // Função para enviar uma nova mensagem
     const handleSendMessage = async () => {
         if (newMessage.trim() === '') return;
+
+        // Verifica se o status do chamado é "Fechado"
+        if (status === 'Fechado') {
+            enqueueSnackbar('Não é possível enviar mensagens em um chamado fechado.', { variant: 'error' });
+            return;
+        }
 
         await sendMessage(
             currentUser?.uid,
@@ -96,6 +115,20 @@ const ChamadoDetalhes = () => {
         setNewMessage(''); // Limpa o campo de mensagem
     };
 
+    // Função para obter a cor com base na prioridade
+    const getPrioridadeColor = (prioridade) => {
+        switch (prioridade) {
+            case 'Baixa':
+                return '#4CAF50'; // Verde
+            case 'Média':
+                return '#FF9800'; // Laranja
+            case 'Alta':
+                return '#F44336'; // Vermelho
+            default:
+                return '#000000'; // Preto (padrão)
+        }
+    };
+
     // Se ainda não carregou o chamado ou o currentUser estiver nulo, exibe uma mensagem de carregamento
     if (!chamado || !currentUser) {
         return <Typography>Carregando...</Typography>;
@@ -104,18 +137,18 @@ const ChamadoDetalhes = () => {
     return (
         <Box sx={{ display: 'flex' }}>
             <Sidebar />
-            <Box sx={{ flex: 1, marginLeft: { xs: 0, md: 30 }, p: 3 }}>
+            <Box sx={{ flex: 1, marginLeft: { xs: 0, md: 30 }, p: 3, backgroundColor: '#f0f0f0' }}>
                 {/* Título do chamado */}
                 <Typography 
                     variant="h4" 
                     sx={{ 
                         mb: 3, 
                         fontWeight: 'bold', 
-                        color: '#4A148C', 
-                        textAlign: { xs: 'center', md: 'left' } 
+                        textAlign: { xs: 'center', md: 'left' },
+                        color: '#4A148C',
                     }}
                 >
-                    Bate-papo para o chamado {chamado.id}
+                    Ordem de serviço: {chamado.id}
                 </Typography>
 
                 {/* Detalhes do Chamado */}
@@ -125,14 +158,14 @@ const ChamadoDetalhes = () => {
                         mb: 3, 
                         borderRadius: 4, 
                         boxShadow: 3, 
-                        backgroundColor: '#FAFAFA' 
+                        backgroundColor: '#FFFFFF',
                     }}
                 >
                     <Typography 
                         variant="h6" 
                         sx={{ fontWeight: 'bold', mb: 2, color: '#6A1B9A' }}
                     >
-                        Título do Chamado: {chamado.titulo || "N/A"}
+                        Assunto da OS: {chamado.titulo || "N/A"}
                     </Typography>
                     <Typography 
                         variant="h6" 
@@ -167,11 +200,17 @@ const ChamadoDetalhes = () => {
                                 value={status}
                                 onChange={(e) => handleStatusChange(e.target.value)}
                                 label="Status"
-                                sx={{ borderRadius: 2 }}
+                                sx={{ 
+                                    borderRadius: 2,
+                                    backgroundColor: '#FFFFFF',
+                                    '& .MuiOutlinedInput-notchedOutline': {
+                                        borderColor: '#6A1B9A',
+                                    },
+                                }}
                             >
-                                <MenuItem value="aberto">Aberto</MenuItem>
-                                <MenuItem value="em atendimento">Em Atendimento</MenuItem>
-                                <MenuItem value="fechado">Fechado</MenuItem>
+                                <MenuItem value="Aberto">Aberto</MenuItem>
+                                <MenuItem value="Em Atendimento">Em Atendimento</MenuItem>
+                                <MenuItem value="Fechado">Fechado</MenuItem>
                             </Select>
                         </FormControl>
                     ) : (
@@ -194,16 +233,62 @@ const ChamadoDetalhes = () => {
                                 value={prioridade}
                                 onChange={(e) => handlePrioridadeChange(e.target.value)}
                                 label="Prioridade"
-                                sx={{ borderRadius: 2 }}
+                                sx={{
+                                    borderRadius: 2,
+                                    color: getPrioridadeColor(prioridade),
+                                    fontWeight: 'bold',
+                                    backgroundColor: '#FFFFFF',
+                                    '& .MuiOutlinedInput-notchedOutline': {
+                                        borderColor: '#6A1B9A',
+                                    },
+                                }}
                             >
-                                <MenuItem value="baixa">Baixa</MenuItem>
-                                <MenuItem value="média">Média</MenuItem>
-                                <MenuItem value="alta">Alta</MenuItem>
+                                <MenuItem value="Baixa" sx={{ color: '#4CAF50', fontWeight: 'bold' }}>Baixa</MenuItem>
+                                <MenuItem value="Média" sx={{ color: '#FF9800', fontWeight: 'bold' }}>Média</MenuItem>
+                                <MenuItem value="Alta" sx={{ color: '#F44336', fontWeight: 'bold' }}>Alta</MenuItem>
+                            </Select>
+                        </FormControl>
+                    ) : (
+                        <Typography 
+                            sx={{ 
+                                mb: 2, 
+                                color: getPrioridadeColor(prioridade),
+                                fontWeight: 'bold',
+                            }}
+                        >
+                            {prioridade}
+                        </Typography>
+                    )}
+
+                    {/* Tipo do Chamado */}
+                    <Typography 
+                        variant="h6" 
+                        sx={{ fontWeight: 'bold', mb: 2, color: '#6A1B9A' }}
+                    >
+                        Tipo:
+                    </Typography>
+                    {isTechnicianOrAdmin ? (
+                        <FormControl fullWidth sx={{ mb: 2 }}>
+                            <InputLabel>Tipo</InputLabel>
+                            <Select
+                                value={tipo}
+                                onChange={(e) => handleTipoChange(e.target.value)}
+                                label="Tipo"
+                                sx={{ 
+                                    borderRadius: 2,
+                                    backgroundColor: '#FFFFFF',
+                                    '& .MuiOutlinedInput-notchedOutline': {
+                                        borderColor: '#6A1B9A',
+                                    },
+                                }}
+                            >
+                                <MenuItem value="Requisição">Requisição</MenuItem>
+                                <MenuItem value="Incidente">Incidente</MenuItem>
                             </Select>
                         </FormControl>
                     ) : (
                         <Typography sx={{ mb: 2, color: 'text.secondary' }}>
-                            {prioridade}
+                            {tipo}
                         </Typography>
                     )}
                 </Paper>
@@ -214,7 +299,7 @@ const ChamadoDetalhes = () => {
                         p: 3, 
                         borderRadius: 4, 
                         boxShadow: 3, 
-                        backgroundColor: '#FAFAFA' 
+                        backgroundColor: '#FFFFFF',
                     }}
                 >
                     <Typography 
@@ -286,8 +371,10 @@ const ChamadoDetalhes = () => {
                             onChange={(e) => setNewMessage(e.target.value)}
                             placeholder="Digite sua mensagem..."
                             variant="outlined"
+                            disabled={status === 'Fechado'} // Desabilita o campo se o status for "Fechado"
                             sx={{
                                 borderRadius: 2,
+                                backgroundColor: '#FFFFFF',
                                 '& .MuiOutlinedInput-root': {
                                     borderRadius: 2,
                                 },
@@ -297,14 +384,18 @@ const ChamadoDetalhes = () => {
                             variant="contained"
                             color="primary"
                             onClick={handleSendMessage}
+                            disabled={status === 'Fechado'} // Desabilita o botão se o status for "Fechado"
                             sx={{
                                 borderRadius: 2,
                                 padding: '12px 24px',
                                 fontSize: '1rem',
                                 textTransform: 'none',
                                 boxShadow: 2,
+                                backgroundColor: '#6A1B9A',
+                                color: '#FFFFFF',
                                 transition: 'all 0.3s ease',
                                 '&:hover': {
+                                    backgroundColor: '#4A148C',
                                     boxShadow: 4,
                                     transform: 'scale(1.02)',
                                 },

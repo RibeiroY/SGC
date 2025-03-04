@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -20,9 +20,8 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 import { useSnackbar } from 'notistack';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
 import { Html5QrcodeScanner } from 'html5-qrcode';
-import { useAuth } from '../contexts/AuthContext'; // Importa o contexto de autenticação
+import { useAuth } from '../contexts/AuthContext';
 
-// Componente para encapsular o scanner
 const QrScannerComponent = ({ onScan, onError, onClose }) => {
   useEffect(() => {
     const config = { fps: 10, qrbox: 250 };
@@ -36,23 +35,20 @@ const QrScannerComponent = ({ onScan, onError, onClose }) => {
         scanner.clear();
       },
       (errorMessage) => {
-        // Chama onError sempre que ocorrer um erro
         onError(errorMessage);
       }
     );
 
     return () => {
-      // Limpa o scanner ao desmontar o componente
-      scanner.clear().catch((err) => console.error("Falha ao limpar o scanner", err));
+      scanner.clear().catch((err) =>
+        console.error("Falha ao limpar o scanner", err)
+      );
     };
   }, [onScan, onError]);
 
   return (
     <Box>
       <div id="qr-reader" style={{ width: "100%", height: "300px" }} />
-      <Button variant="outlined" color="secondary" onClick={onClose} sx={{ marginTop: 2 }}>
-        Fechar Leitor
-      </Button>
     </Box>
   );
 };
@@ -85,38 +81,41 @@ const ChamadoDialog = ({ open, onClose }) => {
       tipo: !tipo.trim(),
     };
     setErrors(newErrors);
-    return !Object.values(newErrors).some((error) => error); // Retorna true se não houver erros
+    return !Object.values(newErrors).some((error) => error);
   };
 
   // Função para buscar o username na coleção "usernames"
   const getUsername = async () => {
-    // Supondo que o documento tenha um campo "uid" com o ID do usuário e um campo "username"
     const usernameQuery = query(
       collection(db, 'usernames'),
       where('uid', '==', currentUser.uid)
     );
     const querySnapshot = await getDocs(usernameQuery);
     if (!querySnapshot.empty) {
-      // Retorna o primeiro documento encontrado
       return querySnapshot.docs[0].data().username;
     }
     return '';
   };
 
-  // Callback quando o QR code é lido
-  const handleScan = (data) => {
-    if (data) {
-      console.log('QR code lido:', data);
-      setEquipamento(data);
-      setShowQRScanner(false);
-      enqueueSnackbar('Código do equipamento lido com sucesso!', { variant: 'success' });
-    }
-  };
+  // Memoriza as funções de callback para o scanner
+  const handleScan = useCallback(
+    (data) => {
+      if (data) {
+        console.log('QR code lido:', data);
+        setEquipamento(data);
+        setShowQRScanner(false);
+        enqueueSnackbar('Código do equipamento lido com sucesso!', { variant: 'success' });
+      }
+    },
+    [enqueueSnackbar]
+  );
 
-  // Callback para erros
-  const handleError = (error) => {
-    console.error('Erro ao ler o QR code:', error);
-  };
+  const handleError = useCallback(
+    (error) => {
+      console.error('Erro ao ler o QR code:', error);
+    },
+    []
+  );
 
   // Verifica se o equipamento existe no Firestore
   const checkEquipamentoExists = async () => {
@@ -130,7 +129,6 @@ const ChamadoDialog = ({ open, onClose }) => {
 
   // Submete o formulário de criação de chamado
   const handleSubmit = async () => {
-    // Valida os campos antes de enviar
     if (!validateFields()) {
       enqueueSnackbar('Preencha todos os campos obrigatórios.', { variant: 'error' });
       return;
@@ -143,7 +141,6 @@ const ChamadoDialog = ({ open, onClose }) => {
         enqueueSnackbar('Não foi possível obter o username.', { variant: 'error' });
         return;
       }
-      // Chama addChamado passando o username obtido do Firestore
       await addChamado(titulo, descricao, equipamento, tipo, username);
       onClose();
     } else {
@@ -156,7 +153,6 @@ const ChamadoDialog = ({ open, onClose }) => {
       <DialogTitle>Criar Novo Chamado</DialogTitle>
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 2 }}>
-          {/* Campo Título */}
           <TextField
             label="Título"
             value={titulo}
@@ -167,7 +163,6 @@ const ChamadoDialog = ({ open, onClose }) => {
             helperText={errors.titulo ? 'Este campo é obrigatório.' : ''}
             required
           />
-          {/* Campo Descrição */}
           <TextField
             label="Descrição"
             value={descricao}
@@ -180,7 +175,6 @@ const ChamadoDialog = ({ open, onClose }) => {
             helperText={errors.descricao ? 'Este campo é obrigatório.' : ''}
             required
           />
-          {/* Campo Tipo de Chamado */}
           <FormControl fullWidth variant="outlined" error={errors.tipo} required>
             <InputLabel id="tipo-chamado-label">Tipo de Chamado</InputLabel>
             <Select
@@ -198,7 +192,6 @@ const ChamadoDialog = ({ open, onClose }) => {
               </Box>
             )}
           </FormControl>
-          {/* Campo Código do Equipamento */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <TextField
               label="Código do Equipamento"
@@ -210,17 +203,12 @@ const ChamadoDialog = ({ open, onClose }) => {
               helperText={errors.equipamento ? 'Este campo é obrigatório.' : ''}
               required
             />
-            {/* Mostra o ícone de QR Code apenas em dispositivos móveis */}
             {isMobile && (
-              <IconButton
-                color="primary"
-                onClick={() => setShowQRScanner(!showQRScanner)}
-              >
+              <IconButton color="primary" onClick={() => setShowQRScanner((prev) => !prev)}>
                 <QrCode2Icon />
               </IconButton>
             )}
           </Box>
-          {/* Leitor de QR Code */}
           {showQRScanner && (
             <QrScannerComponent 
               onScan={handleScan}
@@ -237,7 +225,7 @@ const ChamadoDialog = ({ open, onClose }) => {
         <Button
           onClick={handleSubmit}
           color="primary"
-          disabled={loading || !titulo || !descricao || !equipamento || !tipo} // Desabilita o botão se algum campo estiver vazio
+          disabled={loading || !titulo || !descricao || !equipamento || !tipo}
         >
           {loading ? 'Salvando...' : 'Salvar'}
         </Button>

@@ -1,6 +1,16 @@
 import { useState } from 'react';
 import { db } from './../firebase/firebase';
-import { collection, doc, setDoc, runTransaction, query, orderBy, limit, getDocs } from 'firebase/firestore';
+import { 
+  collection, 
+  doc, 
+  setDoc, 
+  runTransaction, 
+  query, 
+  orderBy, 
+  limit, 
+  getDocs,
+  where 
+} from 'firebase/firestore';
 import { useSnackbar } from 'notistack';
 
 export const useChamados = () => {
@@ -49,6 +59,7 @@ export const useChamados = () => {
   };
 
   // Função para adicionar um novo chamado utilizando o chamadoId como chave do documento
+  // Agora, o setor é definido com base no equipamento, se este não for nulo.
   const addChamado = async (titulo, descricao, equipamento, tipo, username) => {
     setLoading(true);
     setError(null);
@@ -57,7 +68,23 @@ export const useChamados = () => {
       // Obtém o próximo ID formatado
       const chamadoId = await getNextChamadoId();
 
-      // Cria o documento com o ID gerado
+      // Se o equipamento não estiver vazio ou nulo, consulta a coleção 'equipamentos'
+      // para obter o setor associado ao equipamento (usando o campo "code").
+      let setor = null;
+      if (equipamento) {
+        const equipamentosQuery = query(
+          collection(db, 'equipamentos'),
+          where('code', '==', equipamento.trim())
+        );
+        const equipamentosSnapshot = await getDocs(equipamentosQuery);
+        if (!equipamentosSnapshot.empty) {
+          // Se houver pelo menos um equipamento encontrado, pega o primeiro e seu setor
+          const equipmentData = equipamentosSnapshot.docs[0].data();
+          setor = equipmentData.setor || null;
+        }
+      }
+
+      // Cria o documento com o ID gerado, incluindo o campo setor, se disponível
       const chamadoRef = doc(db, 'chamados', chamadoId);
       await setDoc(chamadoRef, {
         titulo,
@@ -65,8 +92,9 @@ export const useChamados = () => {
         equipamento,
         tipo,
         username,       // Armazena o username do usuário
-        prioridade: null,  // Prioridade será definida posteriormente
-        status: 'aberto',  // Status padrão
+        setor,          // Setor baseado no equipamento (pode ser null)
+        prioridade: 'Média',  // Prioridade será definida posteriormente
+        status: 'Aberto',  // Status padrão
         createdAt: new Date(),  // Data de criação
       });
 
