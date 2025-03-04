@@ -6,6 +6,7 @@ import Register from "./components/pages/Register";
 import Home from "./components/pages/Home";
 import Equipments from "./components/pages/Equipments";
 import Chamados from "./components/pages/Chamados";
+import ChamadoDetalhes from "./components/pages/ChamadoDetalhes";
 //import UserProfile from "./components/UserProfile";
 
 
@@ -38,6 +39,10 @@ const Routes = () => {
     {
       path: "/chamados",
       element: <Chamados />,
+    },
+    {
+      path: "/chamados/:id", // Rota para a página de detalhes do chamado
+      element: <ChamadoDetalhes />,
     }
     /*{
       path: "/profile",

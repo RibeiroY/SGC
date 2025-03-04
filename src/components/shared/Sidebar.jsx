@@ -36,8 +36,12 @@ const Sidebar = () => {
 
   const handleLogout = async () => {
     try {
+      setDrawerOpen(false); // Fecha o Drawer
       await auth.signOut();
-      navigate('/login');
+      // Aguarda um tick antes de navegar para evitar conflitos de renderização
+      setTimeout(() => {
+        navigate('/login');
+      }, 0);
     } catch (error) {
       console.error('Erro ao sair:', error);
     }
