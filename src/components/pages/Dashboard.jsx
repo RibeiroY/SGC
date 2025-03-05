@@ -66,6 +66,8 @@ const Dashboard = () => {
     // Funções para calcular os dados do dashboard
     const totalEquipamentos = equipments.length;
     const totalChamadosAbertos = chamados.filter(chamado => chamado.status === 'Aberto').length;
+    const totalChamadosEmAtendimento = chamados.filter(chamado => chamado.status === 'Em Atendimento').length;
+    const totalChamadosFechados = chamados.filter(chamado => chamado.status === 'Fechado').length;
 
     // Dados para gráficos
     const chamadosPorPrioridade = {
@@ -148,7 +150,7 @@ const Dashboard = () => {
             {
                 label: 'Chamados',
                 data: [chamadosPorStatus.Aberto, chamadosPorStatus.EmAtendimento, chamadosPorStatus.Fechado],
-                backgroundColor: ['#4CAF50', '#FF5252', '#FFC107'], // Verde, Vermelho, Amarelo
+                backgroundColor: ['#4CAF50','#FFC107', '#FF5252' ], // Verde, Vermelho, Amarelo
             },
         ],
     };
@@ -171,10 +173,11 @@ const Dashboard = () => {
                 <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold', color: '#3f51b5' }}>
                     Dashboard de Gestão de Ordens de Serviço
                 </Typography>
-
+                <Divider sx={{ mb: 3 }} />
                 <Grid2 container spacing={3}>
-                    {/* Total de Equipamentos */}
+                    {/* Total de Chamados Abertos */}
                     <Grid2 xs={12} md={6} lg={3}>
+                        
                         <Paper sx={{ p: 2, borderRadius: 2, boxShadow: 3, backgroundColor: '#FFFFFF' }}>
                             <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#3f51b5' }}>
                                 Total de Equipamentos
@@ -188,6 +191,20 @@ const Dashboard = () => {
                             </Typography>
                             <Typography variant="h4" sx={{ mt: 1, color: '#3f51b5' }}>
                                 {totalChamadosAbertos}
+                            </Typography>
+                            <Divider />
+                            <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#3f51b5' }}>
+                                Chamados em Atendimento
+                            </Typography>
+                            <Typography variant="h4" sx={{ mt: 1, color: '#3f51b5' }}>
+                                {totalChamadosEmAtendimento}
+                            </Typography>
+                            <Divider />
+                            <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#3f51b5' }}>
+                                Chamados Fechados
+                            </Typography>
+                            <Typography variant="h4" sx={{ mt: 1, color: '#3f51b5' }}>
+                                {totalChamadosFechados}
                             </Typography>
                         </Paper>
                     </Grid2>

@@ -13,6 +13,7 @@ import {
   Select,
   FormControl,
   InputLabel,
+  CircularProgress,
 } from '@mui/material';
 import { useChamados } from './../hooks/useChamados';
 import { db } from './../firebase/firebase';
@@ -21,6 +22,7 @@ import { useSnackbar } from 'notistack';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
 import { Html5QrcodeScanner } from 'html5-qrcode';
 import { useAuth } from '../contexts/AuthContext';
+import SaveIcon from '@mui/icons-material/Save'; // Ícone para o botão de salvar
 
 const QrScannerComponent = ({ onScan, onError, onClose }) => {
   useEffect(() => {
@@ -150,7 +152,9 @@ const ChamadoDialog = ({ open, onClose }) => {
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Criar Novo Chamado</DialogTitle>
+      <DialogTitle sx={{ backgroundColor: '#3f51b5', color: '#fff', textAlign: 'center', fontWeight: 'bold' }}>
+        Criar Novo Chamado
+      </DialogTitle>
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 2 }}>
           <TextField
@@ -162,6 +166,7 @@ const ChamadoDialog = ({ open, onClose }) => {
             error={errors.titulo}
             helperText={errors.titulo ? 'Este campo é obrigatório.' : ''}
             required
+            sx={{ mt: 2 }}
           />
           <TextField
             label="Descrição"
@@ -218,14 +223,16 @@ const ChamadoDialog = ({ open, onClose }) => {
           )}
         </Box>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} color="secondary">
+      <DialogActions sx={{ padding: 3 }}>
+        <Button onClick={onClose} color="secondary" sx={{ textTransform: 'none', borderRadius: 2 }}>
           Cancelar
         </Button>
         <Button
           onClick={handleSubmit}
           color="primary"
           disabled={loading || !titulo || !descricao || !equipamento || !tipo}
+          sx={{ textTransform: 'none', borderRadius: 2 }}
+          startIcon={loading ? <CircularProgress size={20} /> : <SaveIcon />}
         >
           {loading ? 'Salvando...' : 'Salvar'}
         </Button>

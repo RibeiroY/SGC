@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, CircularProgress, Container, Grid2, useMediaQuery, TextField, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { Box, Typography, Button, CircularProgress, Container, Grid2, useMediaQuery, TextField, FormControl, InputLabel, Select, MenuItem, Divider } from '@mui/material';
 import { useAuth } from '../../contexts/AuthContext';
 import EquipmentCard from '../../components/EquipmentCard'; // Cards para mobile
 import EquipmentTable from '../../components/EquipmentTable'; // Tabela para desktop
@@ -203,7 +203,7 @@ const Equipments = () => {
                             )}
                         </Box>
                     </Box>
-
+                <Divider sx={{ mb: 3 }} />
                 {/* Filtro de tipos de equipamentos */}
                 <Box sx={{ mb: 3 }}>
                     <Typography variant="h6" sx={{ mb: 2, color: 'text.secondary' }}>

@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogActions, DialogContent, DialogTitle, TextField, FormControl, InputLabel, Select, MenuItem, Button } from '@mui/material';
+import {
+    Dialog, DialogActions, DialogContent, DialogTitle, TextField, FormControl, InputLabel, Select, MenuItem, Button,
+} from '@mui/material';
 import { db } from './../firebase/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import EditIcon from '@mui/icons-material/Edit'; // Ícone para o título do diálogo
 
 const EquipmentEditDialog = ({ open, onClose, equipment, onSave }) => {
     const [searchedEquipment, setSearchedEquipment] = useState(null);
@@ -16,7 +19,6 @@ const EquipmentEditDialog = ({ open, onClose, equipment, onSave }) => {
 
     const handleChange = (e, field) => {
         if (searchedEquipment) {
-            // Verifique se a estrutura de "attributes" está corretamente inicializada
             const updatedAttributes = searchedEquipment.attributes || {};
             if (field in updatedAttributes) {
                 updatedAttributes[field] = e.target.value;
@@ -27,7 +29,7 @@ const EquipmentEditDialog = ({ open, onClose, equipment, onSave }) => {
             setSearchedEquipment({
                 ...searchedEquipment,
                 attributes: updatedAttributes,
-                [field]: e.target.value
+                [field]: e.target.value,
             });
         }
     };
@@ -37,15 +39,15 @@ const EquipmentEditDialog = ({ open, onClose, equipment, onSave }) => {
             const updatedData = {
                 name: searchedEquipment.name,
                 code: searchedEquipment.code,
-                type: searchedEquipment.type,  // Tipo não pode ser alterado
+                type: searchedEquipment.type,
                 attributes: searchedEquipment.attributes,
                 setor: searchedEquipment.setor,
             };
             const equipmentRef = doc(db, 'equipamentos', searchedEquipment.id);
-            await updateDoc(equipmentRef, updatedData); // Atualiza o equipamento no Firestore
+            await updateDoc(equipmentRef, updatedData);
             toast.success('Equipamento atualizado com sucesso!');
             onSave();
-            onClose(); // Fecha o dialog após salvar
+            onClose();
         } catch (error) {
             toast.error("Erro ao salvar as alterações.");
         }
@@ -55,9 +57,12 @@ const EquipmentEditDialog = ({ open, onClose, equipment, onSave }) => {
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-            <DialogTitle sx={{ backgroundColor: '#f5f5f5', textAlign: 'center', fontWeight: 'bold' }}>Editar Equipamento</DialogTitle>
+            <DialogTitle sx={{ backgroundColor: '#3f51b5', color: '#fff', textAlign: 'center', fontWeight: 'bold' }}>
+                <EditIcon sx={{ verticalAlign: 'middle', mr: 1 }} />
+                Editar Equipamento
+            </DialogTitle>
             <DialogContent sx={{ padding: 3 }}>
-                {/* Exibição do nome e código */}
+                {/* Campos de edição */}
                 <TextField
                     label="Nome"
                     variant="outlined"
@@ -76,8 +81,6 @@ const EquipmentEditDialog = ({ open, onClose, equipment, onSave }) => {
                     disabled
                     sx={{ marginBottom: 2 }}
                 />
-
-                {/* Tipo de equipamento (não editável) */}
                 <TextField
                     label="Tipo"
                     variant="outlined"
@@ -87,7 +90,7 @@ const EquipmentEditDialog = ({ open, onClose, equipment, onSave }) => {
                     sx={{ marginBottom: 2 }}
                 />
 
-                {/* Edição do Setor com opções */}
+                {/* Setor */}
                 <FormControl fullWidth margin="normal" sx={{ marginBottom: 2 }}>
                     <InputLabel>Setor</InputLabel>
                     <Select
@@ -105,7 +108,7 @@ const EquipmentEditDialog = ({ open, onClose, equipment, onSave }) => {
                     </Select>
                 </FormControl>
 
-                {/* Atributos Dinâmicos com base no Tipo */}
+                {/* Atributos dinâmicos */}
                 {searchedEquipment.type === 'computador' && (
                     <>
                         <TextField
@@ -185,8 +188,12 @@ const EquipmentEditDialog = ({ open, onClose, equipment, onSave }) => {
                 )}
             </DialogContent>
             <DialogActions sx={{ padding: 3 }}>
-                <Button onClick={onClose} color="secondary" sx={{ textTransform: 'none' }}>Cancelar</Button>
-                <Button onClick={handleSaveEquipment} color="primary" sx={{ textTransform: 'none' }}>Salvar Alterações</Button>
+                <Button onClick={onClose} color="secondary" sx={{ textTransform: 'none', borderRadius: 2 }}>
+                    Cancelar
+                </Button>
+                <Button onClick={handleSaveEquipment} color="primary" sx={{ textTransform: 'none', borderRadius: 2 }}>
+                    Salvar Alterações
+                </Button>
             </DialogActions>
         </Dialog>
     );

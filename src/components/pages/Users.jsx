@@ -10,7 +10,7 @@ const Users = () => {
     const { users, loading, toggleUserActive, updateUserRole, updateUserSetor } = useUsers();
     const { currentUser } = useAuth();
     const [search, setSearch] = useState("");
-    const isMobile = useMediaQuery("(max-width:600px)");
+    const isMobile = useMediaQuery("(max-width:768px)");
 
     // 🔍 Filtro de usuários baseado na pesquisa
     const filteredUsers = users.filter((user) =>

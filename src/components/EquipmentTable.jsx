@@ -1,10 +1,28 @@
-import React from 'react';
-import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Select, MenuItem } from '@mui/material';
+import React, { useState } from 'react';
+import {
+    Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Select, MenuItem, Button,
+} from '@mui/material';
+import InfoIcon from '@mui/icons-material/Info'; // Ícone para o botão "Ver Detalhes"
+import EquipmentEditDialog from './EquipmentEditDialog'; // Importe o diálogo de edição
 
 const EquipmentTable = ({ equipments, updateEquipment }) => {
+    const [dialogOpen, setDialogOpen] = useState(false); // Estado para controlar o diálogo
+    const [selectedEquipment, setSelectedEquipment] = useState(null); // Estado para armazenar o equipamento selecionado
+
     const computers = equipments.filter(equipment => equipment.type === 'computador');
     const printers = equipments.filter(equipment => equipment.type === 'impressora');
     const phones = equipments.filter(equipment => equipment.type === 'telefone');
+
+    // Função para abrir o diálogo
+    const handleOpenDialog = (equipment) => {
+        setSelectedEquipment(equipment);
+        setDialogOpen(true);
+    };
+
+    // Função para fechar o diálogo
+    const handleCloseDialog = () => {
+        setDialogOpen(false);
+    };
 
     // Função para atualizar o setor
     const handleSetorChange = (equipmentId, newSetor) => {
@@ -13,7 +31,6 @@ const EquipmentTable = ({ equipments, updateEquipment }) => {
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, width: '100%' }}>
-
             {/* Tabela de Computadores */}
             {computers.length > 0 && (
                 <TableContainer
@@ -35,6 +52,7 @@ const EquipmentTable = ({ equipments, updateEquipment }) => {
                                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Processador</TableCell>
                                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Armazenamento</TableCell>
                                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Setor</TableCell>
+                                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Ações</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -78,6 +96,23 @@ const EquipmentTable = ({ equipments, updateEquipment }) => {
                                             <MenuItem value="Recepção">Recepção</MenuItem>
                                         </Select>
                                     </TableCell>
+                                    <TableCell>
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            size="small"
+                                            startIcon={<InfoIcon />}
+                                            onClick={() => handleOpenDialog(equipment)}
+                                            sx={{
+                                                textTransform: 'none',
+                                                borderRadius: 2,
+                                                backgroundColor: "#3f51b5",
+                                                "&:hover": { backgroundColor: "#303f9f" },
+                                            }}
+                                        >
+                                            Ver Detalhes
+                                        </Button>
+                                    </TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
@@ -105,6 +140,7 @@ const EquipmentTable = ({ equipments, updateEquipment }) => {
                                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Modelo</TableCell>
                                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Setor</TableCell>
                                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Tipo de Impressão</TableCell>
+                                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Ações</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -147,6 +183,23 @@ const EquipmentTable = ({ equipments, updateEquipment }) => {
                                         </Select>
                                     </TableCell>
                                     <TableCell>{equipment.attributes?.tipoDeImpressao || "N/A"}</TableCell>
+                                    <TableCell>
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            size="small"
+                                            startIcon={<InfoIcon />}
+                                            onClick={() => handleOpenDialog(equipment)}
+                                            sx={{
+                                                textTransform: 'none',
+                                                borderRadius: 2,
+                                                backgroundColor: "#3f51b5",
+                                                "&:hover": { backgroundColor: "#303f9f" },
+                                            }}
+                                        >
+                                            Ver Detalhes
+                                        </Button>
+                                    </TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
@@ -174,6 +227,7 @@ const EquipmentTable = ({ equipments, updateEquipment }) => {
                                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Modelo</TableCell>
                                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Marca</TableCell>
                                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Setor</TableCell>
+                                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Ações</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -216,11 +270,41 @@ const EquipmentTable = ({ equipments, updateEquipment }) => {
                                             <MenuItem value="Recepção">Recepção</MenuItem>
                                         </Select>
                                     </TableCell>
+                                    <TableCell>
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            size="small"
+                                            startIcon={<InfoIcon />}
+                                            onClick={() => handleOpenDialog(equipment)}
+                                            sx={{
+                                                textTransform: 'none',
+                                                borderRadius: 2,
+                                                backgroundColor: "#3f51b5",
+                                                "&:hover": { backgroundColor: "#303f9f" },
+                                            }}
+                                        >
+                                            Ver Detalhes
+                                        </Button>
+                                    </TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
                     </Table>
                 </TableContainer>
+            )}
+
+            {/* Diálogo de Edição */}
+            {selectedEquipment && (
+                <EquipmentEditDialog
+                    open={dialogOpen}
+                    onClose={handleCloseDialog}
+                    equipment={selectedEquipment}
+                    onSave={() => {
+                        handleCloseDialog();
+                        // Atualize a lista de equipamentos, se necessário
+                    }}
+                />
             )}
         </Box>
     );

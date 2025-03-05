@@ -59,7 +59,6 @@ const Sidebar = () => {
     (userRole === 'admin' || userRole === 'technician') && { label: 'Equipamentos', icon: <Build />, path: '/equipments' },
     userRole === 'admin' && { label: 'Usuários', icon: <People />, path: '/users' },
     { label: 'Perfil', icon: <Person />, path: '/profile' },
-    { label: 'Configurações', icon: <Settings />, path: '/settings' },
   ].filter(Boolean);
 
   return (

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, Container, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Typography, Button, Container, useMediaQuery, useTheme, Divider } from '@mui/material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../shared/Sidebar';
@@ -161,7 +161,7 @@ const Chamados = () => {
                         Criar Novo Chamado
                     </Button>
                 </Box>
-
+                <Divider sx={{ mb: 3 }} />
                 {/* Exibe a tabela ou os cards com base no tamanho da tela */}
                 {isMobile ? (
                     <Box>
