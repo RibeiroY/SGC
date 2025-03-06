@@ -8,6 +8,7 @@ import Equipments from "./components/pages/Equipments";
 import Chamados from "./components/pages/Chamados";
 import ChamadoDetalhes from "./components/pages/ChamadoDetalhes";
 import Dashboard from "./components/pages/Dashboard";
+import EquipamentoDetalhes from "./components/pages/EquipamentoDetalhes";
 //import UserProfile from "./components/UserProfile";
 
 
@@ -48,6 +49,10 @@ const Routes = () => {
     {
       path: "/dashboard",
       element: <Dashboard />,
+    },
+    {
+      path: "/equipamentos/:id", // Rota para a página de detalhes do equipamento
+      element: <EquipamentoDetalhes />,
     }
     /*{
       path: "/profile",

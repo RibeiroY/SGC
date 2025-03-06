@@ -15,7 +15,9 @@ const Users = () => {
     // 🔍 Filtro de usuários baseado na pesquisa
     const filteredUsers = users.filter((user) =>
         user.username?.toLowerCase().includes(search.toLowerCase()) ||
-        user.email?.toLowerCase().includes(search.toLowerCase())
+        user.email?.toLowerCase().includes(search.toLowerCase())||
+        user.name?.toLowerCase().includes(search.toLowerCase()) ||  // Se estiver usando `name`
+        user.displayName?.toLowerCase().includes(search.toLowerCase()) // Se estiver usando `displayName`
     );
 
     // ⏳ Enquanto carrega, exibe tela de loading
@@ -35,7 +37,7 @@ const Users = () => {
                 <Typography variant="h4" gutterBottom>Gerenciar Usuários</Typography>
 
                 <TextField
-                    label="Buscar por username ou e-mail"
+                    label="Buscar por nome, username ou e-mail"
                     variant="outlined"
                     fullWidth
                     margin="normal"

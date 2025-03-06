@@ -4,7 +4,7 @@ import { useRegister } from "../../hooks/useRegister";
 import RegisterForm from "../../components/RegisterForm"; // Novo componente
 
 const Register = () => {
-    const { handleRegister, error, success } = useRegister();
+    const { handleRegister, error, success, loading } = useRegister();
 
     return (
         <Box
@@ -29,7 +29,7 @@ const Register = () => {
                     maxWidth: "400px",
                 }}
             >
-                <RegisterForm onSubmit={handleRegister} error={error} success={success} />
+                <RegisterForm onSubmit={handleRegister} error={error} success={success} loading={loading} />
             </Box>
         </Box>
     );

@@ -13,7 +13,7 @@ import {
   Divider 
 } from '@mui/material';
 import { db } from '../../firebase/firebase';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { useAuth } from '../../contexts/AuthContext';
 import Sidebar from '../shared/Sidebar';
 import useChats from '../../hooks/useChats'; // Hook atualizado do chat
@@ -42,23 +42,22 @@ const ChamadoDetalhes = () => {
         }
     }, [currentUser, navigate]);
 
-    // Busca os detalhes do chamado
+    // Assinatura em tempo real para obter os detalhes do chamado
     useEffect(() => {
-        const fetchChamado = async () => {
-            const docRef = doc(db, 'chamados', id);
-            const docSnap = await getDoc(docRef);
+        const docRef = doc(db, 'chamados', id);
+        const unsubscribe = onSnapshot(docRef, (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 setChamado({ id: docSnap.id, ...data });
-                setStatus(data.status); // Define o estado inicial do status
-                setPrioridade(data.prioridade); // Define o estado inicial da prioridade
-                setTipo(data.tipo); // Define o estado inicial do tipo
+                setStatus(data.status); // Atualiza o estado do status
+                setPrioridade(data.prioridade); // Atualiza o estado da prioridade
+                setTipo(data.tipo); // Atualiza o estado do tipo
             } else {
                 console.log("Chamado não encontrado!");
             }
-        };
-
-        fetchChamado();
+        });
+        // Cleanup: cancela a inscrição quando o componente for desmontado
+        return () => unsubscribe();
     }, [id]);
 
     // Função para atualizar o status do chamado
@@ -66,7 +65,6 @@ const ChamadoDetalhes = () => {
         try {
             const chamadoRef = doc(db, 'chamados', id);
             await updateDoc(chamadoRef, { status: newStatus });
-            setStatus(newStatus); // Atualiza o estado local
             enqueueSnackbar('Status atualizado com sucesso!', { variant: 'success' });
         } catch (error) {
             enqueueSnackbar('Erro ao atualizar o status.', { variant: 'error' });
@@ -78,7 +76,6 @@ const ChamadoDetalhes = () => {
         try {
             const chamadoRef = doc(db, 'chamados', id);
             await updateDoc(chamadoRef, { prioridade: newPrioridade });
-            setPrioridade(newPrioridade); // Atualiza o estado local
             enqueueSnackbar('Prioridade atualizada com sucesso!', { variant: 'success' });
         } catch (error) {
             enqueueSnackbar('Erro ao atualizar a prioridade.', { variant: 'error' });
@@ -90,7 +87,6 @@ const ChamadoDetalhes = () => {
         try {
             const chamadoRef = doc(db, 'chamados', id);
             await updateDoc(chamadoRef, { tipo: newTipo });
-            setTipo(newTipo); // Atualiza o estado local
             enqueueSnackbar('Tipo atualizado com sucesso!', { variant: 'success' });
         } catch (error) {
             enqueueSnackbar('Erro ao atualizar o tipo.', { variant: 'error' });
@@ -130,7 +126,7 @@ const ChamadoDetalhes = () => {
         }
     };
 
-    // Se ainda não carregou o chamado ou o currentUser estiver nulo, exibe uma mensagem de carregamento
+    // Enquanto os dados do chamado não estiverem carregados, exibe uma mensagem de carregamento
     if (!chamado || !currentUser) {
         return <Typography>Carregando...</Typography>;
     }
@@ -365,16 +361,19 @@ const ChamadoDetalhes = () => {
                             })
                         )}
                     </Box>
-                    <Divider sx={{ mb: 2 }} /> 
-                    {/* Campo para enviar nova mensagem */}
-                    <Box sx={{ display: 'flex', gap: 2 }}>
+                    <Divider sx={{ mb: 2 }} />
+                    {/* Formulário para enviar nova mensagem */}
+                    <Box component="form" onSubmit={(e) => {
+                        e.preventDefault();
+                        handleSendMessage();
+                    }} sx={{ display: 'flex', gap: 2 }}>
                         <TextField
                             fullWidth
                             value={newMessage}
                             onChange={(e) => setNewMessage(e.target.value)}
                             placeholder="Digite sua mensagem..."
                             variant="outlined"
-                            disabled={status === 'Fechado'} // Desabilita o campo se o status for "Fechado"
+                            disabled={status === 'Fechado'}
                             sx={{
                                 borderRadius: 2,
                                 backgroundColor: '#FFFFFF',
@@ -384,10 +383,10 @@ const ChamadoDetalhes = () => {
                             }}
                         />
                         <Button
+                            type="submit"
                             variant="contained"
                             color="primary"
-                            onClick={handleSendMessage}
-                            disabled={status === 'Fechado'} // Desabilita o botão se o status for "Fechado"
+                            disabled={status === 'Fechado'}
                             sx={{
                                 borderRadius: 2,
                                 padding: '12px 24px',

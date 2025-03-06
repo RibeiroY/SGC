@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { db } from "../firebase/firebase";
-import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
+import { collection, onSnapshot, doc, updateDoc } from "firebase/firestore";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -25,35 +25,34 @@ export const useUsers = () => {
             return;
         }
 
-        fetchUsers();
-    }, [currentUser, navigate]);
+        // Inscrição em tempo real usando onSnapshot
+        const unsubscribe = onSnapshot(
+            collection(db, "usernames"),
+            (snapshot) => {
+                const usersData = snapshot.docs.map((doc) => ({
+                    id: doc.id,
+                    ...doc.data(),
+                    createdAt: doc.data().createdAt?.toDate().toLocaleString() || "N/A",
+                    lastLogin: doc.data().lastLogin?.toDate().toLocaleString() || "N/A",
+                }));
+                setUsers(usersData);
+                setLoading(false);
+            },
+            (error) => {
+                console.error("❌ Erro ao buscar usuários:", error);
+                setLoading(false);
+            }
+        );
 
-    const fetchUsers = async () => {
-        try {
-            const querySnapshot = await getDocs(collection(db, "usernames"));
-            const usersData = querySnapshot.docs.map((doc) => ({
-                id: doc.id,
-                ...doc.data(),
-                createdAt: doc.data().createdAt?.toDate().toLocaleString() || "N/A",
-                lastLogin: doc.data().lastLogin?.toDate().toLocaleString() || "N/A",
-            }));
-            setUsers(usersData);
-        } catch (error) {
-            console.error("❌ Erro ao buscar usuários:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
+        // Cleanup: cancela a inscrição ao desmontar o componente
+        return () => unsubscribe();
+    }, [currentUser, navigate]);
 
     const toggleUserActive = async (userId, currentStatus) => {
         try {
             const userRef = doc(db, "usernames", userId);
             await updateDoc(userRef, { isActive: !currentStatus });
-            setUsers((prevUsers) =>
-                prevUsers.map((user) =>
-                    user.id === userId ? { ...user, isActive: !currentStatus } : user
-                )
-            );
+            // Não é necessário atualizar o estado local, pois o onSnapshot atualizará automaticamente
         } catch (error) {
             console.error("Erro ao atualizar status do usuário:", error);
         }
@@ -63,11 +62,6 @@ export const useUsers = () => {
         try {
             const userRef = doc(db, "usernames", userId);
             await updateDoc(userRef, { role: newRole });
-            setUsers((prevUsers) =>
-                prevUsers.map((user) =>
-                    user.id === userId ? { ...user, role: newRole } : user
-                )
-            );
         } catch (error) {
             console.error("Erro ao atualizar role do usuário:", error);
         }
@@ -77,11 +71,6 @@ export const useUsers = () => {
         try {
             const userRef = doc(db, "usernames", userId);
             await updateDoc(userRef, { setor: newSetor });
-            setUsers((prevUsers) =>
-                prevUsers.map((user) =>
-                    user.id === userId ? { ...user, setor: newSetor } : user
-                )
-            );
         } catch (error) {
             console.error("Erro ao atualizar setor do usuário:", error);
         }

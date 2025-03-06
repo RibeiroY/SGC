@@ -17,22 +17,22 @@ import { styled } from "@mui/material/styles";
 // Estilo personalizado para o Switch
 const CustomSwitch = styled(Switch)(({ theme }) => ({
     "& .MuiSwitch-switchBase.Mui-checked": {
-        color: "#4CAF50", // Cor quando ativo (verde)
+        color: "#4CAF50",
         "&:hover": {
             backgroundColor: "rgba(76, 175, 80, 0.08)",
         },
     },
     "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
-        backgroundColor: "#4CAF50", // Cor da trilha quando ativo (verde)
+        backgroundColor: "#4CAF50",
     },
     "& .MuiSwitch-switchBase": {
-        color: "#F44336", // Cor quando inativo (vermelho)
+        color: "#F44336",
         "&:hover": {
             backgroundColor: "rgba(244, 67, 54, 0.08)",
         },
     },
     "& .MuiSwitch-track": {
-        backgroundColor: "#F44336", // Cor da trilha quando inativo (vermelho)
+        backgroundColor: "#F44336",
     },
 }));
 
@@ -68,7 +68,7 @@ const UserTable = ({ users, updateUserRole, toggleUserActive, updateUserSetor, c
                                 backgroundColor: index % 2 === 0 ? "#EDE7F6" : "#D1C4E9",
                                 transition: "background-color 0.2s ease-in-out",
                                 "&:hover": {
-                                    backgroundColor: "#B39DDB", // Cor de hover
+                                    backgroundColor: "#B39DDB",
                                 },
                             }}
                         >
@@ -81,7 +81,7 @@ const UserTable = ({ users, updateUserRole, toggleUserActive, updateUserSetor, c
                                 <Select
                                     value={user.role}
                                     onChange={(e) => updateUserRole(user.id, e.target.value)}
-                                    disabled={user.email === currentUser.email}
+                                    disabled={user.role === "admin"}
                                     sx={{
                                         borderRadius: 2,
                                         backgroundColor: "#FFFFFF",
@@ -93,11 +93,6 @@ const UserTable = ({ users, updateUserRole, toggleUserActive, updateUserSetor, c
                                     <MenuItem value="user">Usuário</MenuItem>
                                     <MenuItem value="technician">Técnico</MenuItem>
                                     <MenuItem value="admin">Admin</MenuItem>
-                                    <MenuItem value="Financeiro">Financeiro</MenuItem>
-                                    <MenuItem value="RH">RH</MenuItem>
-                                    <MenuItem value="Marketing">Marketing</MenuItem>
-                                    <MenuItem value="Vendas">Vendas</MenuItem>
-                                    <MenuItem value="Recepção">Recepção</MenuItem>
                                 </Select>
                             </TableCell>
                             <TableCell>
@@ -126,7 +121,7 @@ const UserTable = ({ users, updateUserRole, toggleUserActive, updateUserSetor, c
                                 <CustomSwitch
                                     checked={user.isActive ?? true}
                                     onChange={() => toggleUserActive(user.id, user.isActive ?? true)}
-                                    disabled={user.email === currentUser.email}
+                                    disabled={user.email === currentUser?.email}
                                 />
                             </TableCell>
                         </TableRow>

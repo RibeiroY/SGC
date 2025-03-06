@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // Importe o useNavigate
 import {
     Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Select, MenuItem, Button,
 } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info'; // Ícone para o botão "Ver Detalhes"
-import EquipmentEditDialog from './EquipmentEditDialog'; // Importe o diálogo de edição
 
 const EquipmentTable = ({ equipments, updateEquipment }) => {
+    const navigate = useNavigate(); // Hook para navegação
     const [dialogOpen, setDialogOpen] = useState(false); // Estado para controlar o diálogo
     const [selectedEquipment, setSelectedEquipment] = useState(null); // Estado para armazenar o equipamento selecionado
 
@@ -27,6 +28,11 @@ const EquipmentTable = ({ equipments, updateEquipment }) => {
     // Função para atualizar o setor
     const handleSetorChange = (equipmentId, newSetor) => {
         updateEquipment(equipmentId, { setor: newSetor }); // Atualiza o setor no Firestore
+    };
+
+    // Função para redirecionar para a página de detalhes do equipamento
+    const handleViewDetails = (equipmentId) => {
+        navigate(`/equipamentos/${equipmentId}`); // Redireciona para a página de detalhes
     };
 
     return (
@@ -102,7 +108,7 @@ const EquipmentTable = ({ equipments, updateEquipment }) => {
                                             color="primary"
                                             size="small"
                                             startIcon={<InfoIcon />}
-                                            onClick={() => handleOpenDialog(equipment)}
+                                            onClick={() => handleViewDetails(equipment.id)} // Redireciona para detalhes
                                             sx={{
                                                 textTransform: 'none',
                                                 borderRadius: 2,
@@ -189,7 +195,7 @@ const EquipmentTable = ({ equipments, updateEquipment }) => {
                                             color="primary"
                                             size="small"
                                             startIcon={<InfoIcon />}
-                                            onClick={() => handleOpenDialog(equipment)}
+                                            onClick={() => handleViewDetails(equipment.id)} // Redireciona para detalhes
                                             sx={{
                                                 textTransform: 'none',
                                                 borderRadius: 2,
@@ -276,7 +282,7 @@ const EquipmentTable = ({ equipments, updateEquipment }) => {
                                             color="primary"
                                             size="small"
                                             startIcon={<InfoIcon />}
-                                            onClick={() => handleOpenDialog(equipment)}
+                                            onClick={() => handleViewDetails(equipment.id)} // Redireciona para detalhes
                                             sx={{
                                                 textTransform: 'none',
                                                 borderRadius: 2,
@@ -292,19 +298,6 @@ const EquipmentTable = ({ equipments, updateEquipment }) => {
                         </TableBody>
                     </Table>
                 </TableContainer>
-            )}
-
-            {/* Diálogo de Edição */}
-            {selectedEquipment && (
-                <EquipmentEditDialog
-                    open={dialogOpen}
-                    onClose={handleCloseDialog}
-                    equipment={selectedEquipment}
-                    onSave={() => {
-                        handleCloseDialog();
-                        // Atualize a lista de equipamentos, se necessário
-                    }}
-                />
             )}
         </Box>
     );

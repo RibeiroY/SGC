@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // Importe o useNavigate
 import {
     Box, Card, CardContent, Typography, Button, Avatar, FormControl, InputLabel, Select, MenuItem,
 } from '@mui/material';
@@ -7,6 +8,7 @@ import EquipmentEditDialog from './EquipmentEditDialog'; // Importe o diálogo
 import InfoIcon from '@mui/icons-material/Info'; // Ícone para o botão "Ver Detalhes"
 
 const EquipmentCard = ({ equipment, updateEquipment }) => {
+    const navigate = useNavigate(); // Hook para navegação
     const [setor, setSetor] = useState(equipment.setor || ''); // Estado para o setor
     const [dialogOpen, setDialogOpen] = useState(false); // Estado para controlar o diálogo
 
@@ -25,6 +27,11 @@ const EquipmentCard = ({ equipment, updateEquipment }) => {
         const newSetor = event.target.value;
         setSetor(newSetor);
         updateEquipment(equipment.id, { setor: newSetor }); // Chama a função de atualização
+    };
+
+    // Função para redirecionar para a página de detalhes do equipamento
+    const handleViewDetails = () => {
+        navigate(`/equipamentos/${equipment.id}`); // Redireciona para a página de detalhes
     };
 
     // Verifica se o equipamento existe antes de acessar suas propriedades
@@ -122,7 +129,7 @@ const EquipmentCard = ({ equipment, updateEquipment }) => {
                         color="primary"
                         sx={{ mt: 2, textTransform: 'none', borderRadius: 2 }}
                         startIcon={<InfoIcon />}
-                        onClick={handleOpenDialog}
+                        onClick={handleViewDetails} // Redireciona para detalhes
                     >
                         Ver Detalhes
                     </Button>
