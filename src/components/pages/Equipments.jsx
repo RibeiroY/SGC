@@ -10,7 +10,9 @@ import {
   InputLabel, 
   Select, 
   MenuItem, 
-  Divider 
+  Divider,
+  TextField,
+  Autocomplete 
 } from '@mui/material';
 import Sidebar from '../shared/Sidebar';
 import EquipmentCard from '../../components/EquipmentCard';
@@ -33,7 +35,11 @@ const Equipments = () => {
   // Estados para filtros
   const [filterType, setFilterType] = useState("");
   const [filterCode, setFilterCode] = useState(""); // Filtro efetivo para código
-  const [searchCode, setSearchCode] = useState(''); // Valor selecionado no dropdown
+  const [searchCode, setSearchCode] = useState(''); // Valor digitado para código
+  
+  // Estados para filtro de setor
+  const [searchSector, setSearchSector] = useState('');
+  const [filterSector, setFilterSector] = useState('');
   
   const isMobile = useMediaQuery("(max-width:600px)");
 
@@ -55,11 +61,16 @@ const Equipments = () => {
   // Define os códigos disponíveis (únicos) a partir dos equipamentos
   const availableCodes = Array.from(new Set(equipments.map(equipment => equipment.code).filter(Boolean)));
 
+  // Define os setores disponíveis a partir dos equipamentos
+  const availableSectors = Array.from(new Set(equipments.map(equipment => equipment.setor).filter(Boolean)));
+
   // Ao selecionar um código, o filtro é aplicado automaticamente
   const handleCodeChange = (value) => {
     setSearchCode(value);
-    // Limpa o filtro por tipo
+    // Limpa o filtro por tipo e setor
     setFilterType("");
+    setSearchSector("");
+    setFilterSector("");
     // Atualiza o filtro por código para exibir apenas os equipamentos com o código selecionado
     setFilterCode(value.trim());
     // Verifica se há equipamentos com o código selecionado
@@ -72,15 +83,49 @@ const Equipments = () => {
     }
   };
 
+  // Função para atualizar o filtro por setor
+  const handleSectorChange = (value) => {
+    setSearchSector(value);
+    // Limpa os outros filtros
+    setFilterType("");
+    setSearchCode("");
+    setFilterCode("");
+    setFilterSector(value.trim());
+    const matchingEquipments = equipments.filter(equip => equip.setor === value.trim());
+    if (matchingEquipments.length > 0) {
+      toast.success("Equipamento(s) encontrado(s)!");
+    } else {
+      toast.error("Equipamento não encontrado.");
+      setFilterSector("");
+    }
+  };
+
+  // Atualiza o filtro por tipo (mantendo a mesma lógica anterior)
+  const handleTypeChange = (value) => {
+    setFilterType(value);
+    // Limpa os outros filtros
+    setSearchCode("");
+    setFilterCode("");
+    setSearchSector("");
+    setFilterSector("");
+  };
+
   // Filtra os equipamentos: se nenhum filtro for definido, retorna array vazio
   const filteredEquipments = equipments.filter((equipment) => {
-    if (!filterCode && !filterType) return false;
-    if (filterCode && filterType) {
-      return equipment.code === filterCode && equipment.type === filterType;
+    // Se nenhum filtro estiver definido, não exibe nada
+    if (!filterCode && !filterType && !filterSector) return false;
+    
+    let match = true;
+    if(filterCode) {
+      match = match && (equipment.code === filterCode);
     }
-    if (filterCode) return equipment.code === filterCode;
-    if (filterType) return equipment.type === filterType;
-    return false;
+    if(filterType) {
+      match = match && (equipment.type === filterType);
+    }
+    if(filterSector) {
+      match = match && (equipment.setor === filterSector);
+    }
+    return match;
   });
 
   if (equipmentsLoading) {
@@ -108,69 +153,81 @@ const Equipments = () => {
           Gerenciar Equipamentos
         </Typography>
 
-        {/* Seção de filtro por código via dropdown */}
-        <Box sx={{ mb: 3 }}>
-                <Grid2 container spacing={2}>
-                    {/* Filtro por código */}
-                    <Grid2 xs={12} md={6}>
-                    <Typography variant="h6" sx={{ color: "text.secondary", mb: 1 }}>
-                        Selecione o código do equipamento:
-                    </Typography>
-                    <FormControl fullWidth>
-                        <InputLabel>Código</InputLabel>
-                        <Select
-                        value={searchCode}
-                        onChange={(e) => handleCodeChange(e.target.value)}
-                        label="Código"
-                        sx={{ borderRadius: 2 }}
-                        >
-                        {availableCodes.map((code) => (
-                            <MenuItem key={code} value={code}>{code}</MenuItem>
-                        ))}
-                        </Select>
-                    </FormControl>
-                    </Grid2>
-                          {/* Divider vertical para telas md ou maiores */}
-                            <Grid2 xs={0} md={2} sx={{ display: { xs: "none", md: "flex" }, justifyContent: "center" }}>
-                                <Box sx={{ borderLeft: "1px solid #ccc", height: "100%" }} />
-                            </Grid2>
-                    {/* Filtro por tipo */}
-                    <Grid2 xs={12} md={6}>
-                    <Typography variant="h6" sx={{ color: "text.secondary", mb: 1 }}>
-                        Tipos de equipamentos:
-                    </Typography>
-                    <FormControl fullWidth>
-                        <InputLabel>Selecione o tipo de equipamento</InputLabel>
-                        <Select
-                        value={filterType}
-                        onChange={(e) => {
-                            setFilterType(e.target.value);
-                            // Limpa o filtro por código quando o filtro por tipo é selecionado
-                            setSearchCode("");
-                            setFilterCode("");
-                        }}
-                        label="Selecione o tipo de equipamento"
-                        sx={{ borderRadius: 2 }}
-                        >
-                        <MenuItem value="computador">Computadores</MenuItem>
-                        <MenuItem value="impressora">Impressoras</MenuItem>
-                        <MenuItem value="telefone">Telefones</MenuItem>
-                        </Select>
-                    </FormControl>
-                    </Grid2>
-                </Grid2>
-            <Divider sx={{ mt: 3 }} />
+        {/* Seção de filtros */}
+        <Box
+          sx={{
+            mb: 3,
+            display: 'flex',
+            gap: 2,
+            flexWrap: 'wrap',
+            flexDirection: { xs: 'column', md: 'row' }  // Empilha em telas mobile, exibe lado a lado em telas maiores
+          }}
+        >
+          {/* Caixa de busca para código */}
+          <Autocomplete
+            fullWidth
+            freeSolo
+            options={availableCodes}
+            value={searchCode}
+            onChange={(event, newValue) => {
+              handleCodeChange(newValue || '');
+            }}
+            onInputChange={(event, newInputValue) => {
+              setSearchCode(newInputValue);
+            }}
+            renderInput={(params) => (
+              <TextField {...params} label="Código" variant="outlined" />
+            )}
+            sx={{ flex: 1 }}  // Ocupa o espaço disponível proporcionalmente
+          />
+
+          {/* Caixa de seleção para tipo */}
+          <FormControl fullWidth sx={{ flex: 1 }}>
+            <InputLabel>Selecione o tipo de equipamento</InputLabel>
+            <Select
+              value={filterType}
+              onChange={(e) => {
+                handleTypeChange(e.target.value);
+              }}
+              label="Selecione o tipo de equipamento"
+              sx={{ borderRadius: 2 }}
+            >
+              <MenuItem value="computador">Computadores</MenuItem>
+              <MenuItem value="impressora">Impressoras</MenuItem>
+              <MenuItem value="telefone">Telefones</MenuItem>
+            </Select>
+          </FormControl>
+
+          {/* Caixa de busca para setor */}
+          <Autocomplete
+            fullWidth
+            freeSolo
+            options={availableSectors}
+            value={searchSector}
+            onChange={(event, newValue) => {
+              handleSectorChange(newValue || '');
+            }}
+            onInputChange={(event, newInputValue) => {
+              setSearchSector(newInputValue);
+            }}
+            renderInput={(params) => (
+              <TextField {...params} label="Setor" variant="outlined" />
+            )}
+            sx={{ flex: 1 }}
+          />
         </Box>
 
+        <Divider sx={{ mb: 3 }} />
 
         {/* Botão para adicionar novo equipamento */}
         {isAdminOrTechnician && (
-          <Box sx={{ mb: 3 }}>
+          <Box sx={{ mb: 3, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
             <Button
               variant="contained"
               color="secondary"
               onClick={toggleFormVisibility}
               sx={{
+                width: { xs: '100%', md: 'auto' },
                 fontSize: "1rem",
                 padding: "12px 24px",
                 textTransform: "none",

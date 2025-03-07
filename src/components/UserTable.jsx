@@ -11,8 +11,12 @@ import {
     MenuItem,
     Switch,
     Box,
+    Button,
+    useMediaQuery,
+    Tooltip,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
+import { useNavigate } from "react-router-dom";
 
 // Estilo personalizado para o Switch
 const CustomSwitch = styled(Switch)(({ theme }) => ({
@@ -37,6 +41,17 @@ const CustomSwitch = styled(Switch)(({ theme }) => ({
 }));
 
 const UserTable = ({ users, updateUserRole, toggleUserActive, updateUserSetor, currentUser }) => {
+    const navigate = useNavigate();
+    const isMobile = useMediaQuery("(max-width:768px)");
+
+    // Função para truncar texto
+    const truncateText = (text, maxLength) => {
+        if (text.length > maxLength) {
+            return text.substring(0, maxLength) + "...";
+        }
+        return text;
+    };
+
     return (
         <TableContainer
             component={Paper}
@@ -58,6 +73,7 @@ const UserTable = ({ users, updateUserRole, toggleUserActive, updateUserSetor, c
                         <TableCell sx={{ color: "white", fontWeight: "bold" }}>Função</TableCell>
                         <TableCell sx={{ color: "white", fontWeight: "bold" }}>Setor</TableCell>
                         <TableCell sx={{ color: "white", fontWeight: "bold" }}>Ativo</TableCell>
+                        <TableCell sx={{ color: "white", fontWeight: "bold" }}>Ações</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -72,9 +88,27 @@ const UserTable = ({ users, updateUserRole, toggleUserActive, updateUserSetor, c
                                 },
                             }}
                         >
-                            <TableCell>{user.displayName || "N/A"}</TableCell>
-                            <TableCell>{user.username || "N/A"}</TableCell>
-                            <TableCell>{user.email || "N/A"}</TableCell>
+                            <TableCell>
+                                <Tooltip title={user.displayName || "N/A"} placement="top">
+                                    <Box>
+                                        {truncateText(user.displayName || "N/A", isMobile ? 10 : 20)}
+                                    </Box>
+                                </Tooltip>
+                            </TableCell>
+                            <TableCell>
+                                <Tooltip title={user.username || "N/A"} placement="top">
+                                    <Box>
+                                        {truncateText(user.username || "N/A", isMobile ? 10 : 20)}
+                                    </Box>
+                                </Tooltip>
+                            </TableCell>
+                            <TableCell>
+                                <Tooltip title={user.email || "N/A"} placement="top">
+                                    <Box>
+                                        {truncateText(user.email || "N/A", isMobile ? 15 : 25)}
+                                    </Box>
+                                </Tooltip>
+                            </TableCell>
                             <TableCell>{user.createdAt}</TableCell>
                             <TableCell>{user.lastLogin}</TableCell>
                             <TableCell>
@@ -123,6 +157,24 @@ const UserTable = ({ users, updateUserRole, toggleUserActive, updateUserSetor, c
                                     onChange={() => toggleUserActive(user.id, user.isActive ?? true)}
                                     disabled={user.email === currentUser?.email}
                                 />
+                            </TableCell>
+                            <TableCell>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={() => navigate(`/users/${user.id}`)}
+                                    sx={{
+                                        borderRadius: 2,
+                                        textTransform: "none",
+                                        backgroundColor: "#6A1B9A",
+                                        color: "#FFFFFF",
+                                        "&:hover": {
+                                            backgroundColor: "#4A148C",
+                                        },
+                                    }}
+                                >
+                                    Detalhes
+                                </Button>
                             </TableCell>
                         </TableRow>
                     ))}
