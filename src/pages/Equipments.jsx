@@ -15,17 +15,17 @@ import {
   Autocomplete,
   IconButton
 } from '@mui/material';
-import Sidebar from '../shared/Sidebar';
-import EquipmentCard from '../../components/EquipmentCard';
-import EquipmentTable from '../../components/EquipmentTable';
-import EquipmentDialog from '../EquipmentDialog';
-import { useEquipments } from '../../hooks/useEquipments';
+import Sidebar from '../components/shared/Sidebar';
+import EquipmentCard from '../components/EquipmentCard';
+import EquipmentTable from '../components/EquipmentTable';
+import EquipmentDialog from '../components/EquipmentDialog';
+import { useEquipments } from '../hooks/useEquipments';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
-import QrScanner from '../shared/QrScanner'; // Importe o componente QrScanner
+import QrScanner from '../components/shared/QrScanner'; // Importe o componente QrScanner
 
 const Equipments = () => {
   const { currentUser } = useAuth();

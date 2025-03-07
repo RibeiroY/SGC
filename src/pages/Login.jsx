@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
 import { Grid2 } from "@mui/material"; // ✅ Importando Grid2
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
-import { useLogin } from "../../hooks/useLogin";
-import LoginForm from "../../components/LoginForm";
-import AuthLoader from "../../components/AuthLoader";
+import { useAuth } from "../contexts/AuthContext";
+import { useLogin } from "../hooks/useLogin";
+import LoginForm from "../components/LoginForm";
+import AuthLoader from "../components/AuthLoader";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 

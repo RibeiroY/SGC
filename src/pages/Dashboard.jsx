@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, Paper, CircularProgress, Grid2, Divider } from '@mui/material';
-import { useEquipments } from '../../hooks/useEquipments'; // Hook para equipamentos
-import { useChamados } from '../../hooks/useChamados'; // Hook para chamados
-import { useUsers } from '../../hooks/useUsers'; // Hook para usuários
+import { useEquipments } from '../hooks/useEquipments'; // Hook para equipamentos
+import { useChamados } from '../hooks/useChamados'; // Hook para chamados
+import { useUsers } from '../hooks/useUsers'; // Hook para usuários
 import { Doughnut, Bar, Line } from 'react-chartjs-2'; // Gráficos
 import { collection, onSnapshot } from 'firebase/firestore';
-import { db } from '../../firebase/firebase';
+import { db } from '../firebase/firebase';
 import { format, subDays } from 'date-fns';
-import { useAuth } from '../../contexts/AuthContext'; // Contexto de autenticação
+import { useAuth } from '../contexts/AuthContext'; // Contexto de autenticação
 import { useNavigate } from 'react-router-dom'; // Para redirecionamento
-import Sidebar from '../shared/Sidebar'; // Componente Sidebar
+import Sidebar from '../components/shared/Sidebar'; // Componente Sidebar
 
 // Importe e registre os componentes do Chart.js
 import {

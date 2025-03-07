@@ -13,10 +13,10 @@ import {
   Divider,
   CircularProgress,
 } from '@mui/material';
-import { db } from '../../firebase/firebase';
+import { db } from '../firebase/firebase';
 import { doc, getDoc, updateDoc, collection, getDocs } from 'firebase/firestore';
-import { useAuth } from '../../contexts/AuthContext';
-import Sidebar from '../shared/Sidebar';
+import { useAuth } from '../contexts/AuthContext';
+import Sidebar from '../components/shared/Sidebar';
 import { useSnackbar } from 'notistack';
 
 const UserDetalhes = () => {

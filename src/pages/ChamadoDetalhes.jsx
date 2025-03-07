@@ -12,11 +12,11 @@ import {
   InputLabel,
   Divider 
 } from '@mui/material';
-import { db } from '../../firebase/firebase';
+import { db } from '../firebase/firebase';
 import { doc, onSnapshot, updateDoc, arrayUnion, collection, query, where, getDocs } from 'firebase/firestore';  // Adicionei as importações necessárias
-import { useAuth } from '../../contexts/AuthContext';
-import Sidebar from '../shared/Sidebar';
-import useChats from '../../hooks/useChats';
+import { useAuth } from '../contexts/AuthContext';
+import Sidebar from '../components/shared/Sidebar';
+import useChats from '../hooks/useChats';
 import { format } from 'date-fns';
 import { useSnackbar } from 'notistack';
 

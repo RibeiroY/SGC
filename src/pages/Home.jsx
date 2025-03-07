@@ -1,11 +1,11 @@
 import React from "react";
 import { Box, Typography, Button, Divider, Paper, Grid2 } from "@mui/material";
-import Sidebar from "../shared/Sidebar";
-import { useAuth } from "../../contexts/AuthContext";
-import useRedirectIfNotLoggedIn from "../../hooks/useRedirectIfNotLoggedIn";
+import Sidebar from "../components/shared/Sidebar";
+import { useAuth } from "../contexts/AuthContext";
+import useRedirectIfNotLoggedIn from "../hooks/useRedirectIfNotLoggedIn";
 import { useNavigate } from "react-router-dom";
 import { keyframes } from "@emotion/react";
-import UserBlocked from "../UserBlocked";
+import UserBlocked from "../components/UserBlocked";
 
 // Animação de fade-in
 const fadeIn = keyframes`

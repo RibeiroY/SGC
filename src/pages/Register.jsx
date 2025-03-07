@@ -1,7 +1,7 @@
 import React from "react";
 import { Box } from "@mui/material";
-import { useRegister } from "../../hooks/useRegister";
-import RegisterForm from "../../components/RegisterForm"; // Novo componente
+import { useRegister } from "../hooks/useRegister";
+import RegisterForm from "../components/RegisterForm"; // Novo componente
 
 const Register = () => {
     const { handleRegister, error, success, loading } = useRegister();

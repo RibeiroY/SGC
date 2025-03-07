@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Button, Divider, useMediaQuery } from '@mui/material';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import Sidebar from '../shared/Sidebar';
-import ChamadoDialog from '../../components/ChamadoDialog';
-import ChamadosTable from '../../components/ChamadosTable';
-import ChamadosCard from '../../components/ChamadosCard';
-import { db } from '../../firebase/firebase';
+import Sidebar from '../components/shared/Sidebar';
+import ChamadoDialog from '../components/ChamadoDialog';
+import ChamadosTable from '../components/ChamadosTable';
+import ChamadosCard from '../components/ChamadosCard';
+import { db } from '../firebase/firebase';
 import { collection, getDocs, updateDoc, doc, query, where } from 'firebase/firestore';
 
 const Chamados = () => {

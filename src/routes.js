@@ -1,15 +1,15 @@
 import React from "react";
 import { useRoutes } from "react-router-dom";
-import Login from "./components/pages/Login";
-import Users from "./components/pages/Users";
-import Register from "./components/pages/Register";
-import Home from "./components/pages/Home";
-import Equipments from "./components/pages/Equipments";
-import Chamados from "./components/pages/Chamados";
-import ChamadoDetalhes from "./components/pages/ChamadoDetalhes";
-import Dashboard from "./components/pages/Dashboard";
-import EquipamentoDetalhes from "./components/pages/EquipamentoDetalhes";
-import UserDetalhes from "./components/pages/UserDetalhes";
+import Login from "./pages/Login";
+import Users from "./pages/Users";
+import Register from "./pages/Register";
+import Home from "./pages/Home";
+import Equipments from "./pages/Equipments";
+import Chamados from "./pages/Chamados";
+import ChamadoDetalhes from "./pages/ChamadoDetalhes";
+import Dashboard from "./pages/Dashboard";
+import EquipamentoDetalhes from "./pages/EquipamentoDetalhes";
+import UserDetalhes from "./pages/UserDetalhes";
 //import UserProfile from "./components/UserProfile";
 
 

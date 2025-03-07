@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { Box, Typography, TextField, CircularProgress, useMediaQuery } from "@mui/material";
-import Sidebar from "../shared/Sidebar";
-import UserTable from "../../components/UserTable"; // 📌 Tabela para Desktop
-import UserCard from "../../components/UserCard"; // 📌 Cards para Mobile
-import { useUsers } from "../../hooks/useUsers"; // 📌 Hook personalizado para buscar e gerenciar usuários
-import { useAuth } from "../../contexts/AuthContext"; // 📌 Pega o usuário autenticado
+import Sidebar from "../components/shared/Sidebar";
+import UserTable from "../components/UserTable"; // 📌 Tabela para Desktop
+import UserCard from "../components/UserCard"; // 📌 Cards para Mobile
+import { useUsers } from "../hooks/useUsers"; // 📌 Hook personalizado para buscar e gerenciar usuários
+import { useAuth } from "../contexts/AuthContext"; // 📌 Pega o usuário autenticado
 
 const Users = () => {
     const { users, loading, toggleUserActive, updateUserRole, updateUserSetor } = useUsers();
