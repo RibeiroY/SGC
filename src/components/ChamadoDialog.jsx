@@ -20,53 +20,21 @@ import { db } from './../firebase/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { useSnackbar } from 'notistack';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
-import { Html5QrcodeScanner } from 'html5-qrcode';
 import { useAuth } from '../contexts/AuthContext';
-import SaveIcon from '@mui/icons-material/Save'; // Ícone para o botão de salvar
-
-const QrScannerComponent = ({ onScan, onError, onClose }) => {
-  useEffect(() => {
-    const config = { fps: 10, qrbox: 250 };
-    const scanner = new Html5QrcodeScanner("qr-reader", config, false);
-
-    // Renderiza o scanner e chama o callback onScan quando o QR é lido
-    scanner.render(
-      (decodedText, decodedResult) => {
-        onScan(decodedText);
-        // Para o scanner assim que encontrar um QR
-        scanner.clear();
-      },
-      (errorMessage) => {
-        onError(errorMessage);
-      }
-    );
-
-    return () => {
-      scanner.clear().catch((err) =>
-        console.error("Falha ao limpar o scanner", err)
-      );
-    };
-  }, [onScan, onError]);
-
-  return (
-    <Box>
-      <div id="qr-reader" style={{ width: "100%", height: "300px" }} />
-    </Box>
-  );
-};
+import SaveIcon from '@mui/icons-material/Save';
+import QrScanner from './shared/QrScanner';
 
 const ChamadoDialog = ({ open, onClose }) => {
   const [titulo, setTitulo] = useState('');
   const [descricao, setDescricao] = useState('');
   const [equipamento, setEquipamento] = useState('');
-  const [tipo, setTipo] = useState(''); // Estado para o tipo de chamado
+  const [tipo, setTipo] = useState('');
   const [showQRScanner, setShowQRScanner] = useState(false);
   const { addChamado, loading } = useChamados();
   const { enqueueSnackbar } = useSnackbar();
-  const isMobile = useMediaQuery('(max-width:600px)'); // Verifica se é um dispositivo móvel
-  const { currentUser } = useAuth(); // Obtém o usuário logado
+  const isMobile = useMediaQuery('(max-width:600px)');
+  const { currentUser } = useAuth();
 
-  // Estados para erros de validação
   const [errors, setErrors] = useState({
     titulo: false,
     descricao: false,
@@ -74,7 +42,6 @@ const ChamadoDialog = ({ open, onClose }) => {
     tipo: false,
   });
 
-  // Função para validar os campos
   const validateFields = () => {
     const newErrors = {
       titulo: !titulo.trim(),
@@ -86,7 +53,6 @@ const ChamadoDialog = ({ open, onClose }) => {
     return !Object.values(newErrors).some((error) => error);
   };
 
-  // Função para buscar o username na coleção "usernames"
   const getUsername = async () => {
     const usernameQuery = query(
       collection(db, 'usernames'),
@@ -99,7 +65,6 @@ const ChamadoDialog = ({ open, onClose }) => {
     return '';
   };
 
-  // Memoriza as funções de callback para o scanner
   const handleScan = useCallback(
     (data) => {
       if (data) {
@@ -119,7 +84,6 @@ const ChamadoDialog = ({ open, onClose }) => {
     []
   );
 
-  // Verifica se o equipamento existe no Firestore
   const checkEquipamentoExists = async () => {
     const equipamentoQuery = query(
       collection(db, 'equipamentos'),
@@ -129,7 +93,6 @@ const ChamadoDialog = ({ open, onClose }) => {
     return !equipamentoSnapshot.empty;
   };
 
-  // Submete o formulário de criação de chamado
   const handleSubmit = async () => {
     if (!validateFields()) {
       enqueueSnackbar('Preencha todos os campos obrigatórios.', { variant: 'error' });
@@ -215,7 +178,7 @@ const ChamadoDialog = ({ open, onClose }) => {
             )}
           </Box>
           {showQRScanner && (
-            <QrScannerComponent 
+            <QrScanner 
               onScan={handleScan}
               onError={handleError}
               onClose={() => setShowQRScanner(false)}

@@ -201,7 +201,7 @@ const EquipamentoDetalhes = () => {
             value={name}
             onChange={(e) => setName(e.target.value)}
             margin="normal"
-            disabled={!isTechnicianOrAdmin}
+            disabled // Desabilitado para edição
           />
           <Divider sx={{ my: 2 }} />
           {/* Código do Equipamento */}
@@ -213,14 +213,14 @@ const EquipamentoDetalhes = () => {
             value={code}
             onChange={(e) => setCode(e.target.value)}
             margin="normal"
-            disabled={!isTechnicianOrAdmin}
+            disabled // Desabilitado para edição
           />
           <Divider sx={{ my: 2 }} />
           {/* Tipo do Equipamento */}
           <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#6A1B9A' }}>
             Tipo:
           </Typography>
-          <FormControl fullWidth margin="normal" disabled={!isTechnicianOrAdmin}>
+          <FormControl fullWidth margin="normal" disabled>
             <InputLabel>Tipo</InputLabel>
             <Select
               value={type}

@@ -12,7 +12,8 @@ import {
   MenuItem, 
   Divider,
   TextField,
-  Autocomplete 
+  Autocomplete,
+  IconButton
 } from '@mui/material';
 import Sidebar from '../shared/Sidebar';
 import EquipmentCard from '../../components/EquipmentCard';
@@ -23,6 +24,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import QrCode2Icon from '@mui/icons-material/QrCode2';
+import QrScanner from '../shared/QrScanner'; // Importe o componente QrScanner
 
 const Equipments = () => {
   const { currentUser } = useAuth();
@@ -40,6 +43,9 @@ const Equipments = () => {
   // Estados para filtro de setor
   const [searchSector, setSearchSector] = useState('');
   const [filterSector, setFilterSector] = useState('');
+
+  // Estado para exibir o QR Scanner
+  const [showQRScanner, setShowQRScanner] = useState(false);
   
   const isMobile = useMediaQuery("(max-width:600px)");
 
@@ -164,22 +170,37 @@ const Equipments = () => {
           }}
         >
           {/* Caixa de busca para código */}
-          <Autocomplete
-            fullWidth
-            freeSolo
-            options={availableCodes}
-            value={searchCode}
-            onChange={(event, newValue) => {
-              handleCodeChange(newValue || '');
-            }}
-            onInputChange={(event, newInputValue) => {
-              setSearchCode(newInputValue);
-            }}
-            renderInput={(params) => (
-              <TextField {...params} label="Código" variant="outlined" />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
+            <Autocomplete
+              fullWidth
+              freeSolo
+              options={availableCodes}
+              value={searchCode}
+              onChange={(event, newValue) => {
+                handleCodeChange(newValue || '');
+              }}
+              onInputChange={(event, newInputValue) => {
+                setSearchCode(newInputValue);
+              }}
+              renderInput={(params) => (
+                <TextField {...params} label="Código" variant="outlined" />
+              )}
+            />
+            {/* Exibe o botão QR Code apenas para dispositivos móveis */}
+            {isMobile && (
+              <IconButton
+                color="primary"
+                onClick={() => setShowQRScanner((prev) => !prev)} // Alterna o estado de exibição do QR Scanner
+                sx={{ 
+                  backgroundColor: '#3f51b5', 
+                  color: '#fff', 
+                  '&:hover': { backgroundColor: '#303f9f' } 
+                }}
+              >
+                <QrCode2Icon />
+              </IconButton>
             )}
-            sx={{ flex: 1 }}  // Ocupa o espaço disponível proporcionalmente
-          />
+          </Box>
 
           {/* Caixa de seleção para tipo */}
           <FormControl fullWidth sx={{ flex: 1 }}>
@@ -217,10 +238,27 @@ const Equipments = () => {
           />
         </Box>
 
+        {/* QR Scanner */}
+        {showQRScanner && (
+          <QrScanner
+            onScan={(data) => {
+              handleCodeChange(data); // Aplica o filtro ao ler o código
+              setShowQRScanner(false); // Fecha o scanner após ler o QR Code
+            }}
+            onError={(error) => {
+              // Definindo o timeout para mostrar o erro após 3 segundos
+              setTimeout(() => {
+                setShowQRScanner(false); // Fecha o scanner em caso de erro após o timeout
+              }, 15000); // Timeout de 15 segundos
+            }}
+            onClose={() => setShowQRScanner(false)} // Fecha o scanner manualmente
+          />
+        )}
+
         <Divider sx={{ mb: 3 }} />
 
-        {/* Botão para adicionar novo equipamento */}
-        {isAdminOrTechnician && (
+        {/* Botão para adicionar novo equipamento (exibe somente quando o QR Scanner não está visível) */}
+        {isAdminOrTechnician && !showQRScanner && (
           <Box sx={{ mb: 3, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
             <Button
               variant="contained"

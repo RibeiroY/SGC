@@ -13,7 +13,7 @@ import {
   Divider 
 } from '@mui/material';
 import { db } from '../../firebase/firebase';
-import { doc, onSnapshot, updateDoc, arrayUnion } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, arrayUnion, collection, query, where, getDocs } from 'firebase/firestore';  // Adicionei as importações necessárias
 import { useAuth } from '../../contexts/AuthContext';
 import Sidebar from '../shared/Sidebar';
 import useChats from '../../hooks/useChats';
@@ -67,6 +67,29 @@ const ChamadoDetalhes = () => {
     return () => unsubscribe();
   }, [id, currentUser]);
 
+  // Função para atualizar as informações do atendente
+  const updateAtendenteInfo = async (uid, displayName, email) => {
+    const chamadosRef = collection(db, 'chamados');
+    const q = query(chamadosRef, where('atendentes.uid', '==', uid));
+    const querySnapshot = await getDocs(q);
+
+    querySnapshot.forEach(async (chamadoDoc) => {
+      const chamadoRef = doc(db, 'chamados', chamadoDoc.id);
+      const chamadoData = chamadoDoc.data();
+      
+      if (chamadoData.atendentes) {
+        const updatedAtendentes = chamadoData.atendentes.map(att => {
+          if (att.uid === uid) {
+            return { ...att, displayName, email }; // Atualiza as informações do atendente
+          }
+          return att;
+        });
+
+        await updateDoc(chamadoRef, { atendentes: updatedAtendentes });
+      }
+    });
+  };
+
   // Atualiza status, prioridade e tipo
   const handleStatusChange = async (newStatus) => {
     try {
@@ -100,11 +123,11 @@ const ChamadoDetalhes = () => {
     if (!isTechnicianOrAdmin) return;
     try {
       const chamadoRef = doc(db, 'chamados', id);
+
       await updateDoc(chamadoRef, {
         atendentes: arrayUnion({
           uid: currentUser.uid,
           displayName: currentUser.displayName || "Sem Nome",
-          username: currentUser.username || "Sem Username",
           email: currentUser.email
         })
       });
@@ -139,6 +162,23 @@ const ChamadoDetalhes = () => {
       default: return '#000000';
     }
   };
+
+  useEffect(() => {
+    if (!currentUser?.uid) return;
+
+    const userRef = doc(db, 'users', currentUser.uid);
+    const unsubscribeUser = onSnapshot(userRef, async (docSnap) => {
+      if (docSnap.exists()) {
+        const userData = docSnap.data();
+        const { displayName, email } = userData;
+
+        // Atualiza as informações do atendente nos chamados
+        await updateAtendenteInfo(currentUser.uid, displayName, email);
+      }
+    });
+
+    return () => unsubscribeUser();
+  }, [currentUser]);
 
   if (!chamado || !currentUser) {
     return <Typography>Carregando...</Typography>;
@@ -276,7 +316,6 @@ const ChamadoDetalhes = () => {
           )}
         </Paper>
         <Divider />
-
         {/* Botão "Atender" para técnicos/admin */}
         {isTechnicianOrAdmin && !atendido && (
           <Box sx={{ mb: 3 }}>

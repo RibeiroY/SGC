@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, Typography, Paper, CircularProgress, Grid2, Divider } from '@mui/material';
 import { useEquipments } from '../../hooks/useEquipments'; // Hook para equipamentos
 import { useChamados } from '../../hooks/useChamados'; // Hook para chamados
+import { useUsers } from '../../hooks/useUsers'; // Hook para usuários
 import { Doughnut, Bar, Line } from 'react-chartjs-2'; // Gráficos
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../../firebase/firebase';
@@ -38,8 +39,10 @@ const Dashboard = () => {
     const { currentUser } = useAuth(); // Obtém o usuário logado
     const navigate = useNavigate(); // Para redirecionamento
     const { equipments, loading: loadingEquipments } = useEquipments();
-    const { addChamado, loading: loadingChamados } = useChamados();
-    const [chamados, setChamados] = useState([]);
+    const { chamados, loading: loadingChamados } = useChamados();
+    const { users, loading: loadingUsers } = useUsers(); // Dados dos usuários
+    const [chamadosData, setChamadosData] = useState([]);
+    const hoje = new Date();
 
     // Verificação de login e role
     useEffect(() => {
@@ -57,7 +60,7 @@ const Dashboard = () => {
                 id: doc.id,
                 ...doc.data()
             }));
-            setChamados(chamadosData);
+            setChamadosData(chamadosData);
         });
 
         return () => unsubscribe();
@@ -65,21 +68,21 @@ const Dashboard = () => {
 
     // Funções para calcular os dados do dashboard
     const totalEquipamentos = equipments.length;
-    const totalChamadosAbertos = chamados.filter(chamado => chamado.status === 'Aberto').length;
-    const totalChamadosEmAtendimento = chamados.filter(chamado => chamado.status === 'Em Atendimento').length;
-    const totalChamadosFechados = chamados.filter(chamado => chamado.status === 'Fechado').length;
+    const totalChamadosAbertos = chamadosData.filter(chamado => chamado.status === 'Aberto').length;
+    const totalChamadosEmAtendimento = chamadosData.filter(chamado => chamado.status === 'Em Atendimento').length;
+    const totalChamadosFechados = chamadosData.filter(chamado => chamado.status === 'Fechado').length;
 
     // Dados para gráficos
     const chamadosPorPrioridade = {
-        Baixa: chamados.filter(chamado => chamado.prioridade === 'Baixa').length,
-        Média: chamados.filter(chamado => chamado.prioridade === 'Média').length,
-        Alta: chamados.filter(chamado => chamado.prioridade === 'Alta').length,
+        Baixa: chamadosData.filter(chamado => chamado.prioridade === 'Baixa').length,
+        Média: chamadosData.filter(chamado => chamado.prioridade === 'Média').length,
+        Alta: chamadosData.filter(chamado => chamado.prioridade === 'Alta').length,
     };
 
     const chamadosPorStatus = {
-        Aberto: chamados.filter(chamado => chamado.status === 'Aberto').length,
-        EmAtendimento: chamados.filter(chamado => chamado.status === 'Em Atendimento').length,
-        Fechado: chamados.filter(chamado => chamado.status === 'Fechado').length,
+        Aberto: chamadosData.filter(chamado => chamado.status === 'Aberto').length,
+        EmAtendimento: chamadosData.filter(chamado => chamado.status === 'Em Atendimento').length,
+        Fechado: chamadosData.filter(chamado => chamado.status === 'Fechado').length,
     };
 
     // Equipamentos com mais chamados (top 5)
@@ -92,7 +95,7 @@ const Dashboard = () => {
         .slice(0, 5);
 
     // Últimos 5 chamados registrados
-    const ultimosChamados = chamados
+    const ultimosChamados = chamadosData
         .sort((a, b) => b.createdAt - a.createdAt)
         .slice(0, 5);
 
@@ -102,7 +105,7 @@ const Dashboard = () => {
         const dias = Array.from({ length: 30 }, (_, i) => subDays(hoje, i)).reverse(); // Últimos 30 dias
 
         const chamadosPorDia = dias.map(dia => {
-            const chamadosNoDia = chamados.filter(chamado => {
+            const chamadosNoDia = chamadosData.filter(chamado => {
                 const dataChamado = chamado.createdAt.toDate();
                 return (
                     dataChamado.getDate() === dia.getDate() &&
@@ -155,7 +158,35 @@ const Dashboard = () => {
         ],
     };
 
-    if (loadingEquipments || loadingChamados) {
+    // Chamados atendidos por cada usuário
+    // Chamados atendidos nos últimos 30 dias por cada técnico
+    const chamadosPorTecnico = users.reduce((acc, user) => {
+        const chamadosAtendidos = chamadosData.filter(chamado => {
+            // Filtra apenas os chamados que foram atendidos dentro dos últimos 30 dias
+            const dataChamado = chamado.createdAt.toDate(); // Assumindo que a data de criação está em formato Date
+            const dentroDosUltimos30Dias = dataChamado >= subDays(hoje, 30);
+
+            return dentroDosUltimos30Dias && chamado.atendentes?.some(att => att.uid === user.uid);
+        });
+
+        if (chamadosAtendidos.length > 0) {  // Verifica se o técnico tem chamados atendidos nos últimos 30 dias
+            acc[user.username] = chamadosAtendidos.length;
+        }
+        return acc;
+    }, {});
+
+    const dataBarrasChamadosPorTecnico = {
+        labels: Object.keys(chamadosPorTecnico),
+        datasets: [
+            {
+                label: 'Chamados Atendidos (Últimos 30 Dias)',
+                data: Object.values(chamadosPorTecnico),
+                backgroundColor: '#3f51b5', // Cor azul
+            },
+        ],
+    };
+
+    if (loadingEquipments || loadingChamados || loadingUsers) {
         return (
             <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
                 <CircularProgress />
@@ -177,7 +208,6 @@ const Dashboard = () => {
                 <Grid2 container spacing={3}>
                     {/* Total de Chamados Abertos */}
                     <Grid2 xs={12} md={6} lg={3}>
-                        
                         <Paper sx={{ p: 2, borderRadius: 2, boxShadow: 3, backgroundColor: '#FFFFFF' }}>
                             <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#3f51b5' }}>
                                 Total de Equipamentos
@@ -210,7 +240,7 @@ const Dashboard = () => {
                     </Grid2>
 
                     {/* Gráfico de Pizza: Chamados por Prioridade */}
-                    <Grid2 xs={12} md={6} lg={6}>
+                    <Grid2 xs={12} md={6} lg={3}>
                         <Paper sx={{ p: 2, borderRadius: 2, boxShadow: 3, backgroundColor: '#FFFFFF' }}>
                             <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#3f51b5' }}>
                                 Chamados por Prioridade
@@ -223,7 +253,7 @@ const Dashboard = () => {
                     </Grid2>
 
                     {/* Gráfico de Barras: Chamados por Status */}
-                    <Grid2 xs={12} md={6} lg={6}>
+                    <Grid2 xs={12} md={6} lg={3}>
                         <Paper sx={{ p: 2, borderRadius: 2, boxShadow: 3, backgroundColor: '#FFFFFF' }}>
                             <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#3f51b5' }}>
                                 Chamados por Status
@@ -236,7 +266,7 @@ const Dashboard = () => {
                     </Grid2>
 
                     {/* Gráfico de Linhas: Chamados Abertos nos Últimos 30 Dias */}
-                    <Grid2 xs={12}>
+                    <Grid2 xs={12} md={6} lg={3}>
                         <Paper sx={{ p: 2, borderRadius: 2, boxShadow: 3, backgroundColor: '#FFFFFF' }}>
                             <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#3f51b5' }}>
                                 Chamados Abertos nos Últimos 30 Dias
@@ -244,6 +274,19 @@ const Dashboard = () => {
                             <Divider />
                             <Box sx={{ mt: 2, height: '300px' }}>
                                 <Line data={dataLinhas} />
+                            </Box>
+                        </Paper>
+                    </Grid2>
+
+                    {/* Gráfico de Barras: Chamados Atendidos por Técnico */}
+                    <Grid2 xs={12} md={6}>
+                        <Paper sx={{ p: 2, borderRadius: 2, boxShadow: 3, backgroundColor: '#FFFFFF' }}>
+                            <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#3f51b5' }}>
+                                Chamados Atendidos por Técnico
+                            </Typography>
+                            <Divider />
+                            <Box sx={{ mt: 2, height: '300px' }}>
+                                <Bar data={dataBarrasChamadosPorTecnico} />
                             </Box>
                         </Paper>
                     </Grid2>

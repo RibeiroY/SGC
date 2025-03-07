@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { db } from './../firebase/firebase';
 import { 
   collection, 
@@ -9,14 +9,18 @@ import {
   orderBy, 
   limit, 
   getDocs,
-  where 
+  where,
+  updateDoc,
+  onSnapshot // Adicionei a importação do onSnapshot aqui
 } from 'firebase/firestore';
 import { useSnackbar } from 'notistack';
+import { useAuth } from '../contexts/AuthContext'; // Importando o useAuth para acessar o currentUser
 
 export const useChamados = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { enqueueSnackbar } = useSnackbar();
+  const { currentUser } = useAuth(); // Agora o currentUser está sendo extraído do contexto de autenticação
 
   // Função para obter o próximo ID de chamado de forma transacional
   const getNextChamadoId = async () => {
@@ -56,6 +60,29 @@ export const useChamados = () => {
       console.error("Falha ao obter o próximo ID do chamado: ", error);
       throw error;
     }
+  };
+
+  // Função para atualizar as informações do atendente em todos os chamados
+  const updateAtendenteInfo = async (uid, displayName, email) => {
+    const chamadosRef = collection(db, 'chamados');
+    const q = query(chamadosRef, where('atendentes.uid', '==', uid));
+    const querySnapshot = await getDocs(q);
+
+    querySnapshot.forEach(async (chamadoDoc) => {
+      const chamadoRef = doc(db, 'chamados', chamadoDoc.id);
+      const chamadoData = chamadoDoc.data();
+      
+      if (chamadoData.atendentes) {
+        const updatedAtendentes = chamadoData.atendentes.map(att => {
+          if (att.uid === uid) {
+            return { ...att, displayName, email }; // Atualiza as informações do atendente
+          }
+          return att;
+        });
+
+        await updateDoc(chamadoRef, { atendentes: updatedAtendentes });
+      }
+    });
   };
 
   // Função para adicionar um novo chamado utilizando o chamadoId como chave do documento
@@ -108,6 +135,24 @@ export const useChamados = () => {
       setLoading(false);
     }
   };
+
+  // useEffect para atualizar as informações do atendente caso o displayName ou email mudem
+  useEffect(() => {
+    if (!currentUser?.uid) return;
+
+    const userRef = doc(db, 'users', currentUser.uid);
+    const unsubscribeUser = onSnapshot(userRef, async (docSnap) => {
+      if (docSnap.exists()) {
+        const userData = docSnap.data();
+        const { displayName, email } = userData;
+
+        // Atualiza as informações do atendente nos chamados
+        await updateAtendenteInfo(currentUser.uid, displayName, email);
+      }
+    });
+
+    return () => unsubscribeUser();
+  }, [currentUser]);
 
   return { addChamado, loading, error };
 };
