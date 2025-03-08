@@ -17,6 +17,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import CustomSwitch from "./shared/CustomSwitch"; // Importando o CustomSwitch
 import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 // Função auxiliar para formatar o último login de forma segura
 const getFormattedLastLogin = (lastLogin) => {
@@ -26,7 +27,7 @@ const getFormattedLastLogin = (lastLogin) => {
   // Verifica se já é uma instância de Date
   if (lastLogin instanceof Date) {
     date = lastLogin;
-  } else if (typeof lastLogin.toDate === "function") {
+  } else if (lastLogin && typeof lastLogin.toDate === "function") {
     // Caso seja um Timestamp do Firestore
     date = lastLogin.toDate();
   } else {
@@ -38,7 +39,7 @@ const getFormattedLastLogin = (lastLogin) => {
     return "Sem registro";
   }
 
-  return format(date, "dd/MM/yyyy HH:mm");
+  return format(date, "dd/MM/yyyy HH:mm", { locale: ptBR });
 };
 
 const UserTable = ({ users, updateUserRole, toggleUserActive, updateUserSetor, currentUser }) => {
@@ -108,7 +109,7 @@ const UserTable = ({ users, updateUserRole, toggleUserActive, updateUserSetor, c
                   </Tooltip>
                 </TableCell>
                 <TableCell>{user.createdAt}</TableCell>
-                <TableCell>{formattedLastLogin}</TableCell>
+                <TableCell>{user.lastLogin}</TableCell>
                 <TableCell>
                   <Select
                     value={user.role}

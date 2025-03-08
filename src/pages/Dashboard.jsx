@@ -19,6 +19,7 @@ import { format, subDays } from 'date-fns';
 import { useAuth } from '../contexts/AuthContext'; // Contexto de autenticação
 import { useNavigate } from 'react-router-dom'; // Para redirecionamento
 import Sidebar from '../components/shared/Sidebar'; // Componente Sidebar
+import { enqueueSnackbar, useSnackbar } from 'notistack';
 
 // Importe e registre os componentes do Chart.js
 import {
@@ -59,6 +60,12 @@ const Dashboard = () => {
 
   // Verificação de login e role
   useEffect(() => {
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    if (isMobile) {
+        enqueueSnackbar('Você está acessando a dashboard um dispositivo móvel. Recursos podem não funcionar corretamente. Você será direcionado.', { variant: 'warning' });
+        navigate('/home');
+    }
+
     if (!currentUser) {
       navigate('/login'); // Redireciona para a página de login se o usuário não estiver logado
     } else if (currentUser.role !== 'admin') {
@@ -171,23 +178,22 @@ const Dashboard = () => {
     ],
   };
 
-  // Chamados atendidos por cada usuário
   const chamadosPorTecnico = users.reduce((acc, user) => {
     const chamadosAtendidos = chamadosData.filter(chamado => {
       const dataChamado = chamado.createdAt.toDate();
       const dentroDosUltimos30Dias = dataChamado >= subDays(hoje, 30);
-
+  
       return dentroDosUltimos30Dias && chamado.atendentes?.some(att => att.uid === user.uid);
     });
-
+  
     if (chamadosAtendidos.length > 0) {  // Verifica se o técnico tem chamados atendidos nos últimos 30 dias
-      acc[user.username] = chamadosAtendidos.length;
+      acc[`${user.displayName} (${user.username})`] = chamadosAtendidos.length; // Combina displayName e username
     }
     return acc;
   }, {});
-
+  
   const dataBarrasChamadosPorTecnico = {
-    labels: Object.keys(chamadosPorTecnico),
+    labels: Object.keys(chamadosPorTecnico), // Já contém displayName e username
     datasets: [
       {
         label: 'Chamados Atendidos (Últimos 30 Dias)',

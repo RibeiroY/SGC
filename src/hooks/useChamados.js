@@ -11,16 +11,16 @@ import {
   getDocs,
   where,
   updateDoc,
-  onSnapshot // Adicionei a importação do onSnapshot aqui
+  onSnapshot // Usado para escutar em tempo real
 } from 'firebase/firestore';
 import { useSnackbar } from 'notistack';
-import { useAuth } from '../contexts/AuthContext'; // Importando o useAuth para acessar o currentUser
+import { useAuth } from '../contexts/AuthContext'; // Acessa o currentUser
 
 export const useChamados = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { enqueueSnackbar } = useSnackbar();
-  const { currentUser } = useAuth(); // Agora o currentUser está sendo extraído do contexto de autenticação
+  const { currentUser } = useAuth(); // Acessa o usuário autenticado
 
   // Função para obter o próximo ID de chamado de forma transacional
   const getNextChamadoId = async () => {
@@ -86,7 +86,6 @@ export const useChamados = () => {
   };
 
   // Função para adicionar um novo chamado utilizando o chamadoId como chave do documento
-  // Agora, o setor é definido com base no equipamento, se este não for nulo.
   const addChamado = async (titulo, descricao, equipamento, tipo, username) => {
     setLoading(true);
     setError(null);
@@ -140,6 +139,7 @@ export const useChamados = () => {
   useEffect(() => {
     if (!currentUser?.uid) return;
 
+    // Escuta em tempo real para atualizações no displayName
     const userRef = doc(db, 'users', currentUser.uid);
     const unsubscribeUser = onSnapshot(userRef, async (docSnap) => {
       if (docSnap.exists()) {

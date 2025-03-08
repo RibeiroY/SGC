@@ -19,13 +19,14 @@ import Sidebar from '../components/shared/Sidebar';
 import useChats from '../hooks/useChats';
 import { format } from 'date-fns';
 import { useSnackbar } from 'notistack';
+import { getAuth } from 'firebase/auth';
 
 const ChamadoDetalhes = () => {
   const { id } = useParams(); // ID do chamado
   const navigate = useNavigate();
   const { currentUser } = useAuth(); // Usuário autenticado
   const [chamado, setChamado] = useState(null); // Dados do chamado
-  const { messages, loading, sendMessage } = useChats(id); // Chat em tempo real
+  const { messages, loading, sendMessage } = useChats(id, currentUser); // Chat em tempo real
   const [newMessage, setNewMessage] = useState('');
   const [status, setStatus] = useState('');
   const [prioridade, setPrioridade] = useState('');
@@ -36,6 +37,9 @@ const ChamadoDetalhes = () => {
   const isTechnicianOrAdmin = currentUser?.role === 'technician' || currentUser?.role === 'admin';
   // Controle se o usuário já clicou em "Atender"
   const [atendido, setAtendido] = useState(false);
+
+  // Armazenar os dados dos atendentes
+  const [atendentes, setAtendentes] = useState([]); 
 
   useEffect(() => {
     if (!currentUser) {
@@ -53,11 +57,18 @@ const ChamadoDetalhes = () => {
         setStatus(data.status);
         setPrioridade(data.prioridade);
         setTipo(data.tipo);
-        // Verifica se o usuário já está no array de atendentes
+
+        // Atualizar a lista de atendentes com os dados em tempo real
         if (data.atendentes && Array.isArray(data.atendentes)) {
+          const newAtendentes = [];
+          data.atendentes.forEach((att) => {
+            getAtendenteInfo(att.uid, newAtendentes); // Busca os dados do Firebase Auth
+          });
+          setAtendentes(newAtendentes);
           const jaAtendeu = data.atendentes.some(att => att.uid === currentUser?.uid);
           setAtendido(jaAtendeu);
         } else {
+          setAtendentes([]);
           setAtendido(false);
         }
       } else {
@@ -67,27 +78,15 @@ const ChamadoDetalhes = () => {
     return () => unsubscribe();
   }, [id, currentUser]);
 
-  // Função para atualizar as informações do atendente
-  const updateAtendenteInfo = async (uid, displayName, email) => {
-    const chamadosRef = collection(db, 'chamados');
-    const q = query(chamadosRef, where('atendentes.uid', '==', uid));
-    const querySnapshot = await getDocs(q);
-
-    querySnapshot.forEach(async (chamadoDoc) => {
-      const chamadoRef = doc(db, 'chamados', chamadoDoc.id);
-      const chamadoData = chamadoDoc.data();
-      
-      if (chamadoData.atendentes) {
-        const updatedAtendentes = chamadoData.atendentes.map(att => {
-          if (att.uid === uid) {
-            return { ...att, displayName, email }; // Atualiza as informações do atendente
-          }
-          return att;
-        });
-
-        await updateDoc(chamadoRef, { atendentes: updatedAtendentes });
-      }
-    });
+  // Função para buscar os dados do atendente com base no uid do técnico no Firebase Auth
+  const getAtendenteInfo = (uid, newAtendentes) => {
+    const auth = getAuth();
+    const user = auth.currentUser;  // Acessa os dados do usuário diretamente com o currentUser
+    if (user && user.uid === uid) {  // Compara o uid para pegar os dados
+      const { displayName, email } = user;  // Aqui você pega o displayName e o email diretamente
+      newAtendentes.push({ displayName, email });
+      setAtendentes([...newAtendentes]); // Atualiza a lista de atendentes com os dados do técnico
+    }
   };
 
   // Atualiza status, prioridade e tipo
@@ -118,17 +117,14 @@ const ChamadoDetalhes = () => {
     }
   };
 
-  // Função para "atender" o chamado – registra os dados do atendente no campo "atendentes"
+  // Função para "atender" o chamado – registra o uid do atendente no campo "atendentes"
   const handleAtender = async () => {
     if (!isTechnicianOrAdmin) return;
     try {
       const chamadoRef = doc(db, 'chamados', id);
-
       await updateDoc(chamadoRef, {
         atendentes: arrayUnion({
-          uid: currentUser.uid,
-          displayName: currentUser.displayName || "Sem Nome",
-          email: currentUser.email
+          uid: currentUser.uid, // Apenas o uid é armazenado
         })
       });
       enqueueSnackbar('Você iniciou o atendimento deste chamado!', { variant: 'success' });
@@ -163,23 +159,6 @@ const ChamadoDetalhes = () => {
     }
   };
 
-  useEffect(() => {
-    if (!currentUser?.uid) return;
-
-    const userRef = doc(db, 'users', currentUser.uid);
-    const unsubscribeUser = onSnapshot(userRef, async (docSnap) => {
-      if (docSnap.exists()) {
-        const userData = docSnap.data();
-        const { displayName, email } = userData;
-
-        // Atualiza as informações do atendente nos chamados
-        await updateAtendenteInfo(currentUser.uid, displayName, email);
-      }
-    });
-
-    return () => unsubscribeUser();
-  }, [currentUser]);
-
   if (!chamado || !currentUser) {
     return <Typography>Carregando...</Typography>;
   }
@@ -188,10 +167,7 @@ const ChamadoDetalhes = () => {
     <Box sx={{ display: 'flex' }}>
       <Sidebar />
       <Box sx={{ flex: 1, marginLeft: { xs: 0, md: 30 }, p: 3, backgroundColor: '#f0f0f0' }}>
-        <Typography 
-          variant="h4" 
-          sx={{ mb: 3, fontWeight: 'bold', textAlign: { xs: 'center', md: 'left' }, color: '#4A148C' }}
-        >
+        <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold', textAlign: { xs: 'center', md: 'left' }, color: '#4A148C' }}>
           Ordem de serviço: {chamado.id}
         </Typography>
         <Divider />
@@ -216,7 +192,6 @@ const ChamadoDetalhes = () => {
             {chamado.equipamento || "Chamado geral para setor"}
           </Typography>
           <Divider />
-          {/* Exibe o setor do equipamento, se disponível */}
           <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#6A1B9A' }}>
             Setor do Equipamento:
           </Typography>
@@ -231,7 +206,7 @@ const ChamadoDetalhes = () => {
               <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#6A1B9A' }}>
                 Atendentes:
               </Typography>
-              {chamado.atendentes.map((att, idx) => (
+              {atendentes.map((att, idx) => (
                 <Typography key={idx} sx={{ mb: 1, color: 'text.secondary' }}>
                   {att.displayName} ({att.email})
                 </Typography>
