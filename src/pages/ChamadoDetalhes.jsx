@@ -13,7 +13,7 @@ import {
   Divider 
 } from '@mui/material';
 import { db } from '../firebase/firebase';
-import { doc, onSnapshot, updateDoc, arrayUnion, collection, query, where, getDocs } from 'firebase/firestore';  // Adicionei as importações necessárias
+import { doc, onSnapshot, updateDoc, arrayUnion, collection, query, where, getDocs } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import Sidebar from '../components/shared/Sidebar';
 import useChats from '../hooks/useChats';
@@ -213,7 +213,15 @@ const ChamadoDetalhes = () => {
             Equipamento:
           </Typography>
           <Typography sx={{ mb: 2, color: 'text.secondary' }}>
-            {chamado.equipamento}
+            {chamado.equipamento || "Chamado geral para setor"}
+          </Typography>
+          <Divider />
+          {/* Exibe o setor do equipamento, se disponível */}
+          <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#6A1B9A' }}>
+            Setor do Equipamento:
+          </Typography>
+          <Typography sx={{ mb: 2, color: 'text.secondary' }}>
+            {chamado.setor || "N/A"}
           </Typography>
           <Divider />
 

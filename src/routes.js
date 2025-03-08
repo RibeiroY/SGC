@@ -10,6 +10,7 @@ import ChamadoDetalhes from "./pages/ChamadoDetalhes";
 import Dashboard from "./pages/Dashboard";
 import EquipamentoDetalhes from "./pages/EquipamentoDetalhes";
 import UserDetalhes from "./pages/UserDetalhes";
+import UserProfile from "./pages/UserProfile";
 //import UserProfile from "./components/UserProfile";
 
 
@@ -58,11 +59,11 @@ const Routes = () => {
     {
       path: "/users/:id",
       element: <UserDetalhes />
-    }
-    /*{
+    },
+    {
       path: "/profile",
       element: <UserProfile />
-    }*/
+    }
   ];
   return useRoutes(routesArray);
 };

@@ -1,13 +1,36 @@
-// UserCard.js
 import React from "react";
 import { Card, Box, Avatar, Typography, Select, MenuItem } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
 import EmailIcon from "@mui/icons-material/Email";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import WorkIcon from "@mui/icons-material/Work";
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import CustomSwitch from "./shared/CustomSwitch"; // Importando CustomSwitch
+import { format } from "date-fns";
+
+// Função auxiliar para formatar o lastLogin de forma segura
+const getFormattedLastLogin = (lastLogin) => {
+  if (!lastLogin) return "Sem registro";
+  
+  let date;
+  if (lastLogin instanceof Date) {
+    date = lastLogin;
+  } else if (typeof lastLogin.toDate === "function") {
+    date = lastLogin.toDate();
+  } else {
+    date = new Date(lastLogin);
+  }
+  
+  if (isNaN(date.getTime())) {
+    return "Sem registro";
+  }
+  
+  return format(date, "dd/MM/yyyy HH:mm");
+};
 
 const UserCard = ({ user, updateUserRole, toggleUserActive, updateUserSetor, currentUser }) => {
+  const formattedLastLogin = getFormattedLastLogin(user.lastLogin);
+
   return (
     <Card
       sx={{
@@ -50,6 +73,14 @@ const UserCard = ({ user, updateUserRole, toggleUserActive, updateUserSetor, cur
           <EmailIcon fontSize="small" sx={{ color: "#6A1B9A" }} />
           <Typography variant="body2" color="textSecondary">
             {user.email || "N/A"}
+          </Typography>
+        </Box>
+
+        {/* Último Login */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 1 }}>
+          <AccessTimeIcon fontSize="small" sx={{ color: "#6A1B9A" }} />
+          <Typography variant="body2" color="textSecondary">
+            {formattedLastLogin}
           </Typography>
         </Box>
 

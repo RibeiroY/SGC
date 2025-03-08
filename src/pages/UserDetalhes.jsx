@@ -18,6 +18,7 @@ import { doc, getDoc, updateDoc, collection, getDocs } from 'firebase/firestore'
 import { useAuth } from '../contexts/AuthContext';
 import Sidebar from '../components/shared/Sidebar';
 import { useSnackbar } from 'notistack';
+import { format } from 'date-fns';
 
 const UserDetalhes = () => {
   const { id } = useParams(); // ID do usuário a ser exibido
@@ -43,6 +44,23 @@ const UserDetalhes = () => {
 
   // Verifica se o usuário exibido é o mesmo que o usuário logado
   const isCurrentUser = email === currentUser?.email;
+
+  // Função auxiliar para formatar o lastLogin
+  const getFormattedLastLogin = (lastLogin) => {
+    if (!lastLogin) return "Sem registro";
+    let date;
+    if (lastLogin instanceof Date) {
+      date = lastLogin;
+    } else if (typeof lastLogin.toDate === "function") {
+      date = lastLogin.toDate();
+    } else {
+      date = new Date(lastLogin);
+    }
+    if (isNaN(date.getTime())) {
+      return "Sem registro";
+    }
+    return format(date, "dd/MM/yyyy HH:mm");
+  };
 
   // Redireciona se o usuário não estiver logado
   useEffect(() => {
@@ -89,7 +107,7 @@ const UserDetalhes = () => {
           let count = 0;
           snapshot.forEach((docSnap) => {
             const data = docSnap.data();
-            // Verifica se o email do usuário está na lista de atendentes do chamado
+            // Verifica se o uid do usuário está na lista de atendentes do chamado
             if (data.atendentes && Array.isArray(data.atendentes)) {
               if (data.atendentes.some(att => att.uid === user.uid)) {
                 count++;
@@ -189,6 +207,25 @@ const UserDetalhes = () => {
           <TextField
             fullWidth
             value={email}
+            margin="normal"
+            disabled
+            sx={{
+              backgroundColor: '#f5f5f5',
+              '& .MuiInputBase-root': { borderRadius: '4px' },
+            }}
+          />
+
+          {/* Exibe o Último Login */}
+          <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1, color: '#6A1B9A' }}>
+            Último Login:
+          </Typography>
+          <TextField
+            fullWidth
+            value={
+              user.lastLogin
+                ? getFormattedLastLogin(user.lastLogin)
+                : "Sem registro"
+            }
             margin="normal"
             disabled
             sx={{

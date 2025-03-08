@@ -16,6 +16,30 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import CustomSwitch from "./shared/CustomSwitch"; // Importando o CustomSwitch
+import { format } from "date-fns";
+
+// Função auxiliar para formatar o último login de forma segura
+const getFormattedLastLogin = (lastLogin) => {
+  if (!lastLogin) return "Sem registro";
+
+  let date;
+  // Verifica se já é uma instância de Date
+  if (lastLogin instanceof Date) {
+    date = lastLogin;
+  } else if (typeof lastLogin.toDate === "function") {
+    // Caso seja um Timestamp do Firestore
+    date = lastLogin.toDate();
+  } else {
+    date = new Date(lastLogin);
+  }
+
+  // Verifica se a data é válida
+  if (isNaN(date.getTime())) {
+    return "Sem registro";
+  }
+
+  return format(date, "dd/MM/yyyy HH:mm");
+};
 
 const UserTable = ({ users, updateUserRole, toggleUserActive, updateUserSetor, currentUser }) => {
   const navigate = useNavigate();
@@ -54,101 +78,101 @@ const UserTable = ({ users, updateUserRole, toggleUserActive, updateUserSetor, c
           </TableRow>
         </TableHead>
         <TableBody>
-          {users.map((user, index) => (
-            <TableRow
-              key={user.id}
-              sx={{
-                backgroundColor: index % 2 === 0 ? "#EDE7F6" : "#D1C4E9",
-                transition: "background-color 0.2s ease-in-out",
-                "&:hover": {
-                  backgroundColor: "#B39DDB",
-                },
-              }}
-            >
-              <TableCell>
-                <Tooltip title={user.displayName || "N/A"} placement="top">
-                  <Box>{truncateText(user.displayName || "N/A", isMobile ? 10 : 20)}</Box>
-                </Tooltip>
-              </TableCell>
-              <TableCell>
-                <Tooltip title={user.username || "N/A"} placement="top">
-                  <Box>{truncateText(user.username || "N/A", isMobile ? 10 : 20)}</Box>
-                </Tooltip>
-              </TableCell>
-              <TableCell>
-                <Tooltip title={user.email || "N/A"} placement="top">
-                  <Box>{truncateText(user.email || "N/A", isMobile ? 15 : 25)}</Box>
-                </Tooltip>
-              </TableCell>
-              <TableCell>{user.createdAt}</TableCell>
-              <TableCell>{user.lastLogin}</TableCell>
-              <TableCell>
-                <Select
-                  value={user.role}
-                  onChange={(e) => updateUserRole(user.id, e.target.value)}
-                  disabled={user.role === "admin"}
-                  sx={{
-                    borderRadius: 2,
-                    backgroundColor: "#FFFFFF",
-                    "& .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#6A1B9A",
-                    },
-                  }}
-                >
-                  <MenuItem value="user">Usuário</MenuItem>
-                  <MenuItem value="technician">Técnico</MenuItem>
-                  <MenuItem value="admin">Admin</MenuItem>
-                </Select>
-              </TableCell>
-              <TableCell>
-                <Select
-                  value={user.setor || ""}
-                  onChange={(e) => updateUserSetor(user.id, e.target.value)}
-                  sx={{
-                    borderRadius: 2,
-                    backgroundColor: "#FFFFFF",
-                    "& .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#6A1B9A",
-                    },
-                  }}
-                >
-                  <MenuItem value="TI">TI</MenuItem>
-                  <MenuItem value="Administração">Administração</MenuItem>
-                  <MenuItem value="Jurídico">Jurídico</MenuItem>
-                  <MenuItem value="Financeiro">Financeiro</MenuItem>
-                  <MenuItem value="RH">RH</MenuItem>
-                  <MenuItem value="Marketing">Marketing</MenuItem>
-                  <MenuItem value="Vendas">Vendas</MenuItem>
-                  <MenuItem value="Recepção">Recepção</MenuItem>
-                </Select>
-              </TableCell>
-              <TableCell>
-                <CustomSwitch
-                  checked={user.isActive ?? true}
-                  onChange={() => toggleUserActive(user.id, user.isActive ?? true)}
-                  disabled={user.email === currentUser?.email || user.role === "admin"}
-                />
-              </TableCell>
-              <TableCell>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={() => navigate(`/users/${user.id}`)}
-                  sx={{
-                    borderRadius: 2,
-                    textTransform: "none",
-                    backgroundColor: "#6A148C",
-                    color: "#FFFFFF",
-                    "&:hover": {
-                      backgroundColor: "#4A148C",
-                    },
-                  }}
-                >
-                  Detalhes
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
+          {users.map((user, index) => {
+            const formattedLastLogin = getFormattedLastLogin(user.lastLogin);
+
+            return (
+              <TableRow
+                key={user.id}
+                sx={{
+                  backgroundColor: index % 2 === 0 ? "#EDE7F6" : "#D1C4E9",
+                  transition: "background-color 0.2s ease-in-out",
+                  "&:hover": {
+                    backgroundColor: "#B39DDB",
+                  },
+                }}
+              >
+                <TableCell>
+                  <Tooltip title={user.displayName || "N/A"} placement="top">
+                    <Box>{truncateText(user.displayName || "N/A", isMobile ? 10 : 20)}</Box>
+                  </Tooltip>
+                </TableCell>
+                <TableCell>
+                  <Tooltip title={user.username || "N/A"} placement="top">
+                    <Box>{truncateText(user.username || "N/A", isMobile ? 10 : 20)}</Box>
+                  </Tooltip>
+                </TableCell>
+                <TableCell>
+                  <Tooltip title={user.email || "N/A"} placement="top">
+                    <Box>{truncateText(user.email || "N/A", isMobile ? 15 : 25)}</Box>
+                  </Tooltip>
+                </TableCell>
+                <TableCell>{user.createdAt}</TableCell>
+                <TableCell>{formattedLastLogin}</TableCell>
+                <TableCell>
+                  <Select
+                    value={user.role}
+                    onChange={(e) => updateUserRole(user.id, e.target.value)}
+                    disabled={user.role === "admin"}
+                    sx={{
+                      borderRadius: 2,
+                      backgroundColor: "#FFFFFF",
+                      "& .MuiOutlinedInput-notchedOutline": { borderColor: "#6A1B9A" },
+                    }}
+                  >
+                    <MenuItem value="user">Usuário</MenuItem>
+                    <MenuItem value="technician">Técnico</MenuItem>
+                    <MenuItem value="admin">Admin</MenuItem>
+                  </Select>
+                </TableCell>
+                <TableCell>
+                  <Select
+                    value={user.setor || ""}
+                    onChange={(e) => updateUserSetor(user.id, e.target.value)}
+                    sx={{
+                      borderRadius: 2,
+                      backgroundColor: "#FFFFFF",
+                      "& .MuiOutlinedInput-notchedOutline": { borderColor: "#6A1B9A" },
+                    }}
+                  >
+                    <MenuItem value="TI">TI</MenuItem>
+                    <MenuItem value="Administração">Administração</MenuItem>
+                    <MenuItem value="Jurídico">Jurídico</MenuItem>
+                    <MenuItem value="Financeiro">Financeiro</MenuItem>
+                    <MenuItem value="RH">RH</MenuItem>
+                    <MenuItem value="Marketing">Marketing</MenuItem>
+                    <MenuItem value="Vendas">Vendas</MenuItem>
+                    <MenuItem value="Recepção">Recepção</MenuItem>
+                  </Select>
+                </TableCell>
+                <TableCell>
+                  <CustomSwitch
+                    checked={user.isActive ?? true}
+                    onChange={() => toggleUserActive(user.id, user.isActive ?? true)}
+                    disabled={user.email === currentUser?.email || user.role === "admin"}
+                  />
+                </TableCell>
+                <TableCell>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => navigate(`/users/${user.id}`)}
+                    sx={{
+                      borderRadius: 2,
+                      textTransform: "none",
+                      backgroundColor: "#6A148C",
+                      color: "#FFFFFF",
+                      "&:hover": {
+                        backgroundColor: "#4A148C",
+                      },
+                    }}
+                  >
+                    Detalhes
+                  </Button>
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </TableContainer>
