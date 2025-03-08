@@ -201,7 +201,6 @@ const EquipamentoDetalhes = () => {
             value={name}
             onChange={(e) => setName(e.target.value)}
             margin="normal"
-            disabled // Desabilitado para edição
           />
           <Divider sx={{ my: 2 }} />
           {/* Código do Equipamento */}

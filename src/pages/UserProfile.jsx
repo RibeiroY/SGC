@@ -28,19 +28,13 @@ const UserProfile = () => {
         handleUpdatePassword,
     } = useUsers();
 
-    // Monitora mudanças no `currentUser.displayName` e atualiza o estado `displayName`
-    useEffect(() => {
-        if (currentUser) {
-            setDisplayName(currentUser.displayName || '');
-            setEmail(currentUser.email || '');
-        }
-    }, [currentUser]);
-
-    // Busca o setor do usuário logado
+    // Verificação de autenticação
     useEffect(() => {
         if (!currentUser) {
-            navigate('/login');
+            navigate('/login'); // Redireciona para login se o usuário não estiver autenticado
         } else {
+            setDisplayName(currentUser.displayName || '');
+            setEmail(currentUser.email || '');
             fetchAttendedCount();
             fetchUserSetor();
         }
@@ -224,7 +218,7 @@ const UserProfile = () => {
                     </Box>
                     <Divider sx={{ my: 3 }} />
 
-                    <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#6A1B9A', mb: 2 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#6A1B9A', mb: 2 }} >
                         Alterar Senha
                     </Typography>
                     <TextField

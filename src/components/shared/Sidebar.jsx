@@ -22,6 +22,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../../firebase/firebase';
 import { useAuth } from '../../contexts/AuthContext';
+import Notifications from './../Notifications'; // Importe o componente de notificações
 
 const Sidebar = () => {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
@@ -38,7 +39,6 @@ const Sidebar = () => {
     try {
       setDrawerOpen(false); // Fecha o Drawer
       await auth.signOut();
-      // Aguarda um tick antes de navegar para evitar conflitos de renderização
       setTimeout(() => {
         navigate('/login');
       }, 0);
@@ -59,6 +59,7 @@ const Sidebar = () => {
     (userRole === 'admin' || userRole === 'technician') && { label: 'Equipamentos', icon: <Build />, path: '/equipments' },
     userRole === 'admin' && { label: 'Usuários', icon: <People />, path: '/users' },
     { label: 'Perfil', icon: <Person />, path: '/profile' },
+    
   ].filter(Boolean);
 
   return (
@@ -83,6 +84,8 @@ const Sidebar = () => {
           <Typography variant="h6" sx={{ flexGrow: 1, textAlign: 'center' }}>
             Gerenciamento de TI
           </Typography>
+          {/* Ícone de notificações com indicador de novas notificações */}
+          <Notifications />
         </Toolbar>
       </AppBar>
 
@@ -103,24 +106,24 @@ const Sidebar = () => {
           <Typography variant="h6" sx={{ mb: 3 }}>
             Gerenciamento de TI
           </Typography>
-          {buttons.map(({ label, icon, path, hideMobile }) => (
+          {buttons.map((button, index) => (
             <Button
-              key={label}
+              key={`${button.label}-${index}`} // Garantindo uma chave única usando o índice
               variant="text"
-              startIcon={icon}
+              startIcon={button.icon}
               onClick={() => {
-                navigate(path);
+                navigate(button.path);
                 setDrawerOpen(false);
               }}
               sx={{
                 color: '#fff',
                 width: '90%',
                 justifyContent: 'flex-start',
-                display: hideMobile ? { xs: 'none', md: 'flex' } : 'flex',
+                display: button.hideMobile ? { xs: 'none', md: 'flex' } : 'flex',
                 '&:hover': { backgroundColor: '#3A1E4B' },
               }}
             >
-              {label}
+              {button.label}
             </Button>
           ))}
           <Button
@@ -158,14 +161,16 @@ const Sidebar = () => {
       >
         <Typography variant="h6" sx={{ mb: 3, textAlign: 'center' }}>
           Gerenciamento de TI
+          <Notifications />
         </Typography>
+
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-          {buttons.map(({ label, icon, path }) => (
+          {buttons.map((button, index) => (
             <Button
-              key={label}
+              key={`${button.label}-${index}`} // Garantindo uma chave única usando o índice
               variant="text"
-              startIcon={icon}
-              onClick={() => navigate(path)}
+              startIcon={button.icon}
+              onClick={() => navigate(button.path)}
               sx={{
                 color: '#fff',
                 width: '90%',
@@ -173,7 +178,7 @@ const Sidebar = () => {
                 '&:hover': { backgroundColor: '#3A1E4B' },
               }}
             >
-              {label}
+              {button.label}
             </Button>
           ))}
         </Box>

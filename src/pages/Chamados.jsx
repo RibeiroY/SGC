@@ -105,6 +105,10 @@ const Chamados = () => {
     fetchChamados();
   };
 
+  // Extrai valores únicos para setor e equipamento
+  const uniqueSetores = Array.from(new Set(rawChamados.map(ch => ch.setor).filter(Boolean)));
+  const uniqueEquipamentos = Array.from(new Set(rawChamados.map(ch => ch.equipamento).filter(Boolean)));
+
   return (
     <Box sx={{ display: "flex" }}>
       <Sidebar />
@@ -144,13 +148,13 @@ const Chamados = () => {
             options={rawChamados.map(ch => ch.id).filter(Boolean)}
             value={searchOsId}
             onChange={(event, newValue) => setSearchOsId(newValue || "")}
-            renderInput={(params) => <TextField {...params} label="ID da OS" variant="outlined" />}
+            renderInput={(params) => <TextField {...params} label="Número da Ordem de Serviço" variant="outlined" />}
           />
           <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
             <Autocomplete
               fullWidth
               freeSolo
-              options={rawChamados.map(ch => ch.equipamento).filter(Boolean)}
+              options={uniqueEquipamentos} // Usa a lista de equipamentos únicos
               value={searchEquipamento}
               onChange={(event, newValue) => setSearchEquipamento(newValue || "")}
               renderInput={(params) => <TextField {...params} label="Equipamento" variant="outlined" />}
@@ -173,7 +177,7 @@ const Chamados = () => {
           <Autocomplete
             fullWidth
             freeSolo
-            options={rawChamados.map(ch => ch.setor).filter(Boolean)}
+            options={uniqueSetores} // Usa a lista de setores únicos
             value={searchSetor}
             onChange={(event, newValue) => setSearchSetor(newValue || "")}
             renderInput={(params) => <TextField {...params} label="Setor" variant="outlined" />}
@@ -187,7 +191,7 @@ const Chamados = () => {
             >
               <MenuItem value="">— Padrão (exclui "fechado") —</MenuItem>
               <MenuItem value="Aberto">Aberto</MenuItem>
-              <MenuItem value="Em andamento">Em andamento</MenuItem>
+              <MenuItem value="Em Atendimento">Em Atendimento</MenuItem>
               <MenuItem value="Fechado">Fechado</MenuItem>
             </Select>
           </FormControl>

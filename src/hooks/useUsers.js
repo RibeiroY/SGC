@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { db } from "../firebase/firebase";
-import { collection, onSnapshot, doc, updateDoc, query, where, getDocs } from "firebase/firestore";
+import { collection, onSnapshot, doc, updateDoc, query, where, getDocs, addDoc } from "firebase/firestore";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { enqueueSnackbar } from "notistack";
@@ -25,10 +25,6 @@ export const useUsers = () => {
 
         if (!currentUser.role) return;
 
-        if (currentUser.role !== "admin") {
-            navigate("/");
-            return;
-        }
 
         // Inscrição em tempo real usando onSnapshot para pegar os dados dos usuários
         const unsubscribe = onSnapshot(
@@ -101,22 +97,53 @@ export const useUsers = () => {
 
     const updateUserRole = async (userId, newRole) => {
         try {
-            const userRef = doc(db, "usernames", userId);
-            await updateDoc(userRef, { role: newRole });
+          const userRef = doc(db, "usernames", userId);
+          await updateDoc(userRef, { role: newRole });
+    
+          // Enviar notificação para admins
+          const notificationMessage = `O usuário ${userId} teve seu papel alterado para ${newRole}.`;
+          const notificationRef = collection(db, 'notifications');
+          const usersRef = collection(db, 'usernames');
+          const usersQuery = query(usersRef, where('role', '==', 'admin'));
+          const usersSnapshot = await getDocs(usersQuery);
+    
+          usersSnapshot.forEach(async (userDoc) => {
+            await addDoc(notificationRef, {
+              userId: userDoc.data().uid, // Usar o UID do admin
+              message: notificationMessage,
+              timestamp: new Date(),
+              read: false,
+            });
+          });
         } catch (error) {
-            console.error("Erro ao atualizar role do usuário:", error);
+          console.error("Erro ao atualizar role do usuário:", error);
         }
-    };
-
-    const updateUserSetor = async (userId, newSetor) => {
+      };
+    
+      const updateUserSetor = async (userId, newSetor) => {
         try {
-            const userRef = doc(db, "usernames", userId);
-            await updateDoc(userRef, { setor: newSetor });
+          const userRef = doc(db, "usernames", userId);
+          await updateDoc(userRef, { setor: newSetor });
+    
+          // Enviar notificação para admins
+          const notificationMessage = `O usuário ${userId} teve seu setor alterado para ${newSetor}.`;
+          const notificationRef = collection(db, 'notifications');
+          const usersRef = collection(db, 'usernames');
+          const usersQuery = query(usersRef, where('role', '==', 'admin'));
+          const usersSnapshot = await getDocs(usersQuery);
+    
+          usersSnapshot.forEach(async (userDoc) => {
+            await addDoc(notificationRef, {
+              userId: userDoc.data().uid, // Usar o UID do admin
+              message: notificationMessage,
+              timestamp: new Date(),
+              read: false,
+            });
+          });
         } catch (error) {
-            console.error("Erro ao atualizar setor do usuário:", error);
+          console.error("Erro ao atualizar setor do usuário:", error);
         }
-    };
-
+      };
     const handleUpdateDisplayName = async (newDisplayName) => {
         try {
             // Atualiza o nome de exibição no Firebase Authentication

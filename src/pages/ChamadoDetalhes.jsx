@@ -48,9 +48,12 @@ const ChamadoDetalhes = () => {
   }, [currentUser, navigate]);
 
   // Listener em tempo real do chamado (inclui atendentes)
+// Listener em tempo real do chamado (inclui atendentes)
+// Listener em tempo real do chamado (inclui atendentes)
+// Listener em tempo real do chamado (inclui atendentes)
   useEffect(() => {
     const docRef = doc(db, 'chamados', id);
-    const unsubscribe = onSnapshot(docRef, (docSnap) => {
+    const unsubscribe = onSnapshot(docRef, async (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
         setChamado({ id: docSnap.id, ...data });
@@ -61,15 +64,18 @@ const ChamadoDetalhes = () => {
         // Atualizar a lista de atendentes com os dados em tempo real
         if (data.atendentes && Array.isArray(data.atendentes)) {
           const newAtendentes = [];
-          data.atendentes.forEach((att) => {
-            getAtendenteInfo(att.uid, newAtendentes); // Busca os dados do Firebase Auth
-          });
-          setAtendentes(newAtendentes);
+
+          // Busca os dados de cada atendente a partir do Firebase Authentication
+          for (const att of data.atendentes) {
+            await getAtendenteInfo(att.uid, newAtendentes); // Busca cada uid de atendente
+          }
+
+          setAtendentes(newAtendentes); // Atualiza os atendentes no estado
           const jaAtendeu = data.atendentes.some(att => att.uid === currentUser?.uid);
           setAtendido(jaAtendeu);
         } else {
-          setAtendentes([]);
-          setAtendido(false);
+          setAtendentes([]);  // Se não houver atendentes, reseta
+          setAtendido(false); // Se não houver atendentes, o chamado não está atendido
         }
       } else {
         console.log("Chamado não encontrado!");
@@ -79,15 +85,26 @@ const ChamadoDetalhes = () => {
   }, [id, currentUser]);
 
   // Função para buscar os dados do atendente com base no uid do técnico no Firebase Auth
-  const getAtendenteInfo = (uid, newAtendentes) => {
-    const auth = getAuth();
-    const user = auth.currentUser;  // Acessa os dados do usuário diretamente com o currentUser
-    if (user && user.uid === uid) {  // Compara o uid para pegar os dados
-      const { displayName, email } = user;  // Aqui você pega o displayName e o email diretamente
-      newAtendentes.push({ displayName, email });
-      setAtendentes([...newAtendentes]); // Atualiza a lista de atendentes com os dados do técnico
+  const getAtendenteInfo = async (uid, newAtendentes) => {
+    try {
+      const auth = getAuth();
+      const userSnapshot = await getDocs(query(collection(db, "usernames"), where("uid", "==", uid)));
+      
+      userSnapshot.forEach((doc) => {
+        const userData = doc.data();
+        newAtendentes.push({
+          displayName: userData.displayName, // Display name do atendente
+          email: userData.email,             // Email do atendente
+        });
+      });
+      // Atualiza o estado dos atendentes
+      setAtendentes(prevAtendentes => [...prevAtendentes, ...newAtendentes]);
+    } catch (error) {
+      console.error("Erro ao buscar os dados do atendente:", error);
     }
   };
+
+
 
   // Atualiza status, prioridade e tipo
   const handleStatusChange = async (newStatus) => {
@@ -214,6 +231,7 @@ const ChamadoDetalhes = () => {
               <Divider sx={{ my: 2 }} />
             </>
           )}
+
 
           {/* Status do Chamado */}
           <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#6A1B9A' }}>

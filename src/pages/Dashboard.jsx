@@ -6,13 +6,13 @@ import {
   CircularProgress,
   Divider,
   Button,
-  Grid2
+  Grid2,
 } from '@mui/material';
 
 import { useEquipments } from '../hooks/useEquipments'; // Hook para equipamentos
 import { useChamados } from '../hooks/useChamados'; // Hook para chamados
 import { useUsers } from '../hooks/useUsers'; // Hook para usuários
-import { Doughnut, Bar, Line } from 'react-chartjs-2'; // Gráficos
+import { Pie, Bar, Line } from 'react-chartjs-2'; // Gráficos
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/firebase';
 import { format, subDays } from 'date-fns';
@@ -32,6 +32,7 @@ import {
   Legend,
   PointElement,
   LineElement,
+  Filler
 } from 'chart.js';
 
 ChartJS.register(
@@ -42,7 +43,8 @@ ChartJS.register(
   Tooltip,
   Legend,
   PointElement,
-  LineElement
+  LineElement,
+  Filler
 );
 
 const Dashboard = () => {
@@ -72,6 +74,16 @@ const Dashboard = () => {
       navigate('/home'); // Redireciona para uma página de acesso negado
     }
   }, [currentUser, navigate]);
+    // **Setores com mais chamados nos últimos 30 dias**
+  const chamadosPorSetor = chamadosData.reduce((acc, chamado) => {
+    const dataChamado = chamado.createdAt.toDate();
+    const dentroDosUltimos30Dias = dataChamado >= subDays(hoje, 30);
+
+    if (dentroDosUltimos30Dias) {
+      acc[chamado.setor] = (acc[chamado.setor] || 0) + 1;
+    }
+    return acc;
+  }, {});
 
   // Carrega os chamados em tempo real
   useEffect(() => {
@@ -105,6 +117,29 @@ const Dashboard = () => {
     Fechado: chamadosData.filter(chamado => chamado.status === 'Fechado').length,
   };
 
+  const dataPizzaSetores = {
+    labels: Object.keys(chamadosPorSetor),
+    datasets: [
+      {
+        data: Object.values(chamadosPorSetor),
+        backgroundColor: [
+          '#8E44AD', // Roxo
+          '#2980B9', // Azul
+          '#27AE60', // Verde
+          '#F39C12', // Amarelo
+          '#D35400', // Laranja
+        ],
+        hoverBackgroundColor: [
+          '#9B59B6', // Roxo claro
+          '#3498DB', // Azul claro
+          '#2ECC71', // Verde claro
+          '#F1C40F', // Amarelo claro
+          '#E67E22', // Laranja claro
+        ],
+      },
+    ],
+  };
+
   // Equipamentos com mais chamados (top 5)
   const equipamentosComMaisChamados = equipments
     .map(equipment => ({
@@ -130,8 +165,7 @@ const Dashboard = () => {
         return (
           dataChamado.getDate() === dia.getDate() &&
           dataChamado.getMonth() === dia.getMonth() &&
-          dataChamado.getFullYear() === dia.getFullYear() &&
-          chamado.status === 'Aberto'
+          dataChamado.getFullYear() === dia.getFullYear() 
         );
       });
       return chamadosNoDia.length;
@@ -203,16 +237,7 @@ const Dashboard = () => {
     ],
   };
 
-  // **Setores com mais chamados nos últimos 30 dias**
-  const chamadosPorSetor = chamadosData.reduce((acc, chamado) => {
-    const dataChamado = chamado.createdAt.toDate();
-    const dentroDosUltimos30Dias = dataChamado >= subDays(hoje, 30);
 
-    if (dentroDosUltimos30Dias) {
-      acc[chamado.setor] = (acc[chamado.setor] || 0) + 1;
-    }
-    return acc;
-  }, {});
 
   const setoresComMaisChamados = Object.keys(chamadosPorSetor).map(setor => ({
     setor,
@@ -284,7 +309,7 @@ const Dashboard = () => {
           <Grid2 xs={12} md={6} lg={4}>
             <Paper sx={{ p: 2, borderRadius: 2, boxShadow: 3, backgroundColor: '#FFFFFF', height: '100%', display: 'flex', flexDirection: 'column' }}>
               <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#3f51b5' }}>
-                Chamados com Atraso na Atribuição
+                Chamados a serem atendidos:
               </Typography>
               <Divider />
               <Box sx={{ mt: 2, flex: 1, overflow: 'auto' }}>
@@ -302,32 +327,35 @@ const Dashboard = () => {
             </Paper>
           </Grid2>
         </Grid2>
-
-        {/* Gráficos */}
+        
+        <Grid2 container spacing={3} sx={{ mt: 3 }}>
+                  {/* Gráficos */}
         <Grid2 container spacing={3} sx={{ mt: 2 }}>
           <Grid2 xs={12} md={6} lg={4}>
             <Paper sx={{ p: 2, borderRadius: 2, boxShadow: 3, backgroundColor: '#FFFFFF' }}>
               <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#3f51b5' }}>Chamados por Prioridade</Typography>
               <Box sx={{ mt: 2, height: '300px' }}>
-                <Doughnut data={dataPizza} />
+                <Pie data={dataPizza} />
               </Box>
             </Paper>
           </Grid2>
 
           <Grid2 xs={12} md={6} lg={4}>
+            <Paper sx={{ p: 2, borderRadius: 2, boxShadow: 3, backgroundColor: '#FFFFFF' }}>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#3f51b5' }}>Chamados por Setor</Typography>
+              <Box sx={{ mt: 2, height: '300px' }}>
+                <Pie data={dataPizzaSetores} />
+              </Box>
+            </Paper>
+        </Grid2>
+        </Grid2>
+
+        <Grid2 container spacing={3} sx={{ mt: 3 }}>
+        <Grid2 xs={12} md={6} lg={4}>
             <Paper sx={{ p: 2, borderRadius: 2, boxShadow: 3, backgroundColor: '#FFFFFF' }}>
               <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#3f51b5' }}>Chamados por Status</Typography>
               <Box sx={{ mt: 2, height: '300px' }}>
                 <Bar data={dataBarras} />
-              </Box>
-            </Paper>
-          </Grid2>
-
-          <Grid2 xs={12} md={6} lg={4}>
-            <Paper sx={{ p: 2, borderRadius: 2, boxShadow: 3, backgroundColor: '#FFFFFF' }}>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#3f51b5' }}>Chamados Abertos nos Últimos 30 Dias</Typography>
-              <Box sx={{ mt: 2, height: '300px' }}>
-                <Line data={dataLinhas} />
               </Box>
             </Paper>
           </Grid2>
@@ -341,6 +369,21 @@ const Dashboard = () => {
             </Paper>
           </Grid2>
         </Grid2>
+
+        <Grid2 container spacing={3} sx={{ mt: 3, width: '100%' }}>
+          <Grid2 item xs={12} md={6} lg={4}>
+            <Paper sx={{ p: 2, borderRadius: 2, boxShadow: 3, backgroundColor: '#FFFFFF' }}>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#3f51b5' }}>
+                Chamados Abertos nos Últimos 30 Dias
+              </Typography>
+              <Box sx={{ mt: 2, height: '300px' }}>
+                <Line data={dataLinhas} />
+              </Box>
+            </Paper>
+          </Grid2>
+        </Grid2>
+
+      </Grid2>
 
       </Box>
     </Box>
