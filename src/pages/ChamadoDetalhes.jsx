@@ -10,10 +10,17 @@ import {
   MenuItem, 
   FormControl, 
   InputLabel,
-  Divider 
+  Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
 } from '@mui/material';
 import { db } from '../firebase/firebase';
-import { doc, onSnapshot, updateDoc, arrayUnion, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, arrayUnion, getDocs, query, collection, where } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import Sidebar from '../components/shared/Sidebar';
 import useChats from '../hooks/useChats';
@@ -32,6 +39,8 @@ const ChamadoDetalhes = () => {
   const [prioridade, setPrioridade] = useState('');
   const [tipo, setTipo] = useState('');
   const { enqueueSnackbar } = useSnackbar();
+  const [dialogJustificativaOpen, setDialogJustificativaOpen] = useState(false); // Estado do diálogo de justificativa
+  const [justificativaFechamento, setJustificativaFechamento] = useState(''); // Estado da justificativa
 
   // Verifica se o usuário é técnico ou admin
   const isTechnicianOrAdmin = currentUser?.role === 'technician' || currentUser?.role === 'admin';
@@ -48,9 +57,6 @@ const ChamadoDetalhes = () => {
   }, [currentUser, navigate]);
 
   // Listener em tempo real do chamado (inclui atendentes)
-// Listener em tempo real do chamado (inclui atendentes)
-// Listener em tempo real do chamado (inclui atendentes)
-// Listener em tempo real do chamado (inclui atendentes)
   useEffect(() => {
     const docRef = doc(db, 'chamados', id);
     const unsubscribe = onSnapshot(docRef, async (docSnap) => {
@@ -104,15 +110,20 @@ const ChamadoDetalhes = () => {
     }
   };
 
-
-
   // Atualiza status, prioridade e tipo
   const handleStatusChange = async (newStatus) => {
-    try {
-      await updateDoc(doc(db, 'chamados', id), { status: newStatus });
-      enqueueSnackbar('Status atualizado com sucesso!', { variant: 'success' });
-    } catch (error) {
-      enqueueSnackbar('Erro ao atualizar o status.', { variant: 'error' });
+    if (newStatus === 'Fechado') {
+      setDialogJustificativaOpen(true); // Abre o diálogo de justificativa
+    } else {
+      try {
+        await updateDoc(doc(db, 'chamados', id), { 
+          status: newStatus,
+          justificativaFechamento: null // Remove a justificativa
+        });
+        enqueueSnackbar('Status atualizado com sucesso!', { variant: 'success' });
+      } catch (error) {
+        enqueueSnackbar('Erro ao atualizar o status.', { variant: 'error' });
+      }
     }
   };
 
@@ -165,6 +176,19 @@ const ChamadoDetalhes = () => {
       newMessage
     );
     setNewMessage('');
+  };
+
+  // Função para confirmar a justificativa de fechamento
+  const handleConfirmarJustificativa = async (justificativa) => {
+    try {
+      await updateDoc(doc(db, 'chamados', id), { 
+        status: 'Fechado',
+        justificativaFechamento: justificativa // Armazena a justificativa
+      });
+      enqueueSnackbar('Chamado fechado com sucesso!', { variant: 'success' });
+    } catch (error) {
+      enqueueSnackbar('Erro ao fechar o chamado.', { variant: 'error' });
+    }
   };
 
   const getPrioridadeColor = (prioridade) => {
@@ -232,6 +256,18 @@ const ChamadoDetalhes = () => {
             </>
           )}
 
+          {/* Exibição da Justificativa de Fechamento */}
+          {chamado.justificativaFechamento && (
+            <>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#6A1B9A' }}>
+                Justificativa de Fechamento:
+              </Typography>
+              <Typography sx={{ mb: 2, color: 'text.secondary' }}>
+                {chamado.justificativaFechamento}
+              </Typography>
+              <Divider sx={{ my: 2 }} />
+            </>
+          )}
 
           {/* Status do Chamado */}
           <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#6A1B9A' }}>
@@ -426,6 +462,49 @@ const ChamadoDetalhes = () => {
           )}
         </Paper>
       </Box>
+
+      {/* Diálogo de Justificativa de Fechamento */}
+      <Dialog open={dialogJustificativaOpen} onClose={() => setDialogJustificativaOpen(false)}>
+        <DialogTitle>Justificativa de Fechamento</DialogTitle>
+        <DialogContent>
+          <FormControl component="fieldset">
+            <RadioGroup
+              value={justificativaFechamento}
+              onChange={(e) => setJustificativaFechamento(e.target.value)}
+            >
+              <FormControlLabel value="Problema resolvido" control={<Radio />} label="Problema resolvido" />
+              <FormControlLabel value="Equipamento substituído" control={<Radio />} label="Equipamento substituído" />
+              <FormControlLabel value="Chamado duplicado" control={<Radio />} label="Chamado duplicado" />
+              <FormControlLabel value="Solicitação inválida" control={<Radio />} label="Solicitação inválida" />
+              <FormControlLabel value="Outro" control={<Radio />} label="Outro" />
+            </RadioGroup>
+          </FormControl>
+          {justificativaFechamento === 'Outro' && (
+            <TextField
+              fullWidth
+              label="Digite a justificativa"
+              value={justificativaFechamento}
+              onChange={(e) => setJustificativaFechamento(e.target.value)}
+              sx={{ mt: 2 }}
+            />
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDialogJustificativaOpen(false)} color="secondary">
+            Cancelar
+          </Button>
+          <Button 
+            onClick={() => {
+              handleConfirmarJustificativa(justificativaFechamento);
+              setDialogJustificativaOpen(false);
+            }} 
+            color="primary"
+            disabled={!justificativaFechamento || (justificativaFechamento === 'Outro' && !justificativaFechamento.trim())}
+          >
+            Confirmar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

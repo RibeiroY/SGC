@@ -12,7 +12,6 @@ import {
   Menu,
   Home,
   Person,
-  Settings,
   Logout,
   Dashboard,
   ListAlt,
@@ -22,7 +21,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../../firebase/firebase';
 import { useAuth } from '../../contexts/AuthContext';
-import Notifications from './../Notifications'; // Importe o componente de notificações
+import Notifications from './../Notifications'; 
 
 const Sidebar = () => {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
@@ -82,7 +81,7 @@ const Sidebar = () => {
             <Menu />
           </IconButton>
           <Typography variant="h6" sx={{ flexGrow: 1, textAlign: 'center' }}>
-            Gerenciamento de TI
+            SGC
           </Typography>
           {/* Ícone de notificações com indicador de novas notificações */}
           <Notifications />
@@ -104,7 +103,7 @@ const Sidebar = () => {
           }}
         >
           <Typography variant="h6" sx={{ mb: 3 }}>
-            Gerenciamento de TI
+            SGC
           </Typography>
           {buttons.map((button, index) => (
             <Button
@@ -160,7 +159,7 @@ const Sidebar = () => {
         }}
       >
         <Typography variant="h6" sx={{ mb: 3, textAlign: 'center' }}>
-          Gerenciamento de TI
+          SGC
           <Notifications />
         </Typography>
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, List, ListItem, ListItemText, IconButton, Drawer, Badge, Button, Avatar, ListItemAvatar } from '@mui/material';
+import { Box, Typography, List, ListItem, ListItemText, IconButton, Drawer, Badge, Button} from '@mui/material';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import { db } from '../firebase/firebase';
 import { collection, query, where, onSnapshot, updateDoc, doc, deleteDoc } from 'firebase/firestore';
@@ -83,11 +83,7 @@ const Notifications = () => {
                     },
                   }}
                 >
-                  <ListItemAvatar>
-                    <Avatar sx={{ bgcolor: notification.read ? '#6A1B9A' : '#4CAF50' }}>
-                      {notification.message[0]}
-                    </Avatar>
-                  </ListItemAvatar>
+
                   <ListItemText
                     primary={
                       <Typography variant="body1" sx={{ fontWeight: notification.read ? 'normal' : 'bold', color: '#2B1432' }}>
