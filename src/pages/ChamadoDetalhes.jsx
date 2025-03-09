@@ -20,7 +20,7 @@ import {
   Radio,
 } from '@mui/material';
 import { db } from '../firebase/firebase';
-import { doc, onSnapshot, updateDoc, arrayUnion, getDocs, query, collection, where } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, arrayUnion, getDocs, query, collection, where, addDoc } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import Sidebar from '../components/shared/Sidebar';
 import useChats from '../hooks/useChats';
@@ -109,17 +109,41 @@ const ChamadoDetalhes = () => {
       console.error("Erro ao buscar os dados do atendente:", error);
     }
   };
-
+  const enviarNotificacao = async (mensagem) => {
+    try {
+      const notificationRef = collection(db, 'notifications');
+      const usersRef = collection(db, 'usernames');
+      const usersQuery = query(usersRef, where('role', 'in', ['admin', 'technician']));
+      const usersSnapshot = await getDocs(usersQuery);
+  
+      usersSnapshot.forEach(async (userDoc) => {
+        await addDoc(notificationRef, {
+          userId: userDoc.data().uid,
+          message: mensagem,
+          timestamp: new Date(),
+          read: false,
+          chamadoId: id // Mantemos o ID do chamado relacionado
+        });
+      });
+    } catch (error) {
+      console.error("Erro ao enviar notificação:", error);
+      enqueueSnackbar('Erro ao enviar notificação', { variant: 'error' });
+    }
+  };
   // Atualiza status, prioridade e tipo
   const handleStatusChange = async (newStatus) => {
     if (newStatus === 'Fechado') {
-      setDialogJustificativaOpen(true); // Abre o diálogo de justificativa
+      setDialogJustificativaOpen(true);
     } else {
       try {
         await updateDoc(doc(db, 'chamados', id), { 
           status: newStatus,
-          justificativaFechamento: null // Remove a justificativa
+          justificativaFechamento: null
         });
+        
+        // Notificação igual à de abertura
+        await enviarNotificacao(`O status do chamado ${id} foi alterado para: ${newStatus}`);
+        
         enqueueSnackbar('Status atualizado com sucesso!', { variant: 'success' });
       } catch (error) {
         enqueueSnackbar('Erro ao atualizar o status.', { variant: 'error' });
@@ -179,17 +203,21 @@ const ChamadoDetalhes = () => {
   };
 
   // Função para confirmar a justificativa de fechamento
-  const handleConfirmarJustificativa = async (justificativa) => {
-    try {
-      await updateDoc(doc(db, 'chamados', id), { 
-        status: 'Fechado',
-        justificativaFechamento: justificativa // Armazena a justificativa
-      });
-      enqueueSnackbar('Chamado fechado com sucesso!', { variant: 'success' });
-    } catch (error) {
-      enqueueSnackbar('Erro ao fechar o chamado.', { variant: 'error' });
-    }
-  };
+const handleConfirmarJustificativa = async (justificativa) => {
+  try {
+    await updateDoc(doc(db, 'chamados', id), { 
+      status: 'Fechado',
+      justificativaFechamento: justificativa
+    });
+    
+    // Notificação no mesmo formato da abertura
+    await enviarNotificacao(`Chamado ${id} foi FECHADO. Motivo: ${justificativa}`);
+    
+    enqueueSnackbar('Chamado fechado com sucesso!', { variant: 'success' });
+  } catch (error) {
+    enqueueSnackbar('Erro ao fechar o chamado.', { variant: 'error' });
+  }
+};
 
   const getPrioridadeColor = (prioridade) => {
     switch (prioridade) {

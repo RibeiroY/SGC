@@ -56,14 +56,16 @@ export function useRegister() {
       const usersQuery = query(usersRef, where('role', '==', 'admin'));
       const usersSnapshot = await getDocs(usersQuery);
 
-      usersSnapshot.forEach(async (userDoc) => {
-        await addDoc(notificationRef, {
-          userId: userDoc.data().uid, // Usar o UID do admin
+      const notificationPromises = usersSnapshot.docs.map(userDoc => 
+        addDoc(notificationRef, {
+          userId: userDoc.data().uid,
           message: notificationMessage,
           timestamp: new Date(),
           read: false,
-        });
-      });
+        })
+      );
+      await Promise.all(notificationPromises);
+      
 
       await auth.signOut();
 
