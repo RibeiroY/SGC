@@ -56,22 +56,51 @@ const Chamados = () => {
   // Busca os chamados
   const fetchChamados = async () => {
     try {
-      const chamadosQuery = query(
-        collection(db, 'chamados'),
-        orderBy('createdAt', 'desc')
-      );
-      const querySnapshot = await getDocs(chamadosQuery);
-      const chamadosData = [];
-      querySnapshot.forEach((docSnap) => {
-        chamadosData.push({ id: docSnap.id, ...docSnap.data() });
-      });
+      let chamadosData = [];
+      
+      if (currentUser?.role === 'user') {
+        // Busca apenas o setor do usuário
+        const userQuery = query(
+          collection(db, 'usernames'),
+          where('uid', '==', currentUser.uid)
+        );
+        const userSnapshot = await getDocs(userQuery);
+  
+        if (!userSnapshot.empty) {
+          const userSetor = userSnapshot.docs[0].data().setor;
+          
+          if (userSetor) {
+            const q = query(
+              collection(db, 'chamados'),
+              where('setor', '==', userSetor)
+            );
+            
+            const snapshot = await getDocs(q);
+            chamadosData = snapshot.docs.map(doc => ({
+              id: doc.id,
+              ...doc.data()
+            }));
+          }
+        }
+      } else {
+        // Mantém ordenação apenas para admin/tecnicos
+        const q = query(
+          collection(db, 'chamados'),
+          orderBy('createdAt', 'desc')
+        );
+        const snapshot = await getDocs(q);
+        chamadosData = snapshot.docs.map(doc => ({ 
+          id: doc.id, 
+          ...doc.data() 
+        }));
+      }
+  
       setRawChamados(chamadosData);
       applyFilters(chamadosData);
     } catch (error) {
       console.error('Erro ao buscar chamados:', error);
     }
   };
-
   // Aplica filtros nos chamados
   const applyFilters = (data) => {
     let filtered = data;
@@ -189,7 +218,7 @@ const Chamados = () => {
               onChange={(e) => setFilterStatus(e.target.value)}
               label="Status"
             >
-              <MenuItem value="">— Padrão (exclui "fechado") —</MenuItem>
+              <MenuItem value="">— Padrão—</MenuItem>
               <MenuItem value="Aberto">Aberto</MenuItem>
               <MenuItem value="Em Atendimento">Em Atendimento</MenuItem>
               <MenuItem value="Fechado">Fechado</MenuItem>
