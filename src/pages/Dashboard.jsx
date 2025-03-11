@@ -19,7 +19,7 @@ import { format, subDays } from 'date-fns';
 import { useAuth } from '../contexts/AuthContext'; // Contexto de autenticação
 import { useNavigate } from 'react-router-dom'; // Para redirecionamento
 import Sidebar from '../components/shared/Sidebar'; // Componente Sidebar
-import { enqueueSnackbar, useSnackbar } from 'notistack';
+import { enqueueSnackbar} from 'notistack';
 
 // Importe e registre os componentes do Chart.js
 import {
@@ -51,7 +51,7 @@ const Dashboard = () => {
   const { currentUser } = useAuth(); // Obtém o usuário logado
   const navigate = useNavigate(); // Para redirecionamento
   const { equipments, loading: loadingEquipments } = useEquipments();
-  const { chamados, loading: loadingChamados } = useChamados();
+  const { loading: loadingChamados } = useChamados();
   const { users, loading: loadingUsers } = useUsers(); // Dados dos usuários
   const [chamadosData, setChamadosData] = useState([]);
   const hoje = new Date();

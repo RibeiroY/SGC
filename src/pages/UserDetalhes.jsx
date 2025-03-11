@@ -45,21 +45,21 @@ const UserDetalhes = () => {
   // Verifica se o usuário exibido é o mesmo que o usuário logado
   const isCurrentUser = email === currentUser?.email;
 
-  // Função auxiliar para formatar o lastLogin
-  const getFormattedLastLogin = (lastLogin) => {
-    if (!lastLogin) return "Sem registro";
-    let date;
-    if (lastLogin instanceof Date) {
-      date = lastLogin;
-    } else if (typeof lastLogin.toDate === "function") {
-      date = lastLogin.toDate();
+  // Função auxiliar para formatar o lastLogin e o createdAt
+  const getFormattedDate = (date) => {
+    if (!date) return "Sem registro";
+    let formattedDate;
+    if (date instanceof Date) {
+      formattedDate = date;
+    } else if (typeof date.toDate === "function") {
+      formattedDate = date.toDate();
     } else {
-      date = new Date(lastLogin);
+      formattedDate = new Date(date);
     }
-    if (isNaN(date.getTime())) {
+    if (isNaN(formattedDate.getTime())) {
       return "Sem registro";
     }
-    return format(date, "dd/MM/yyyy HH:mm");
+    return format(formattedDate, "dd/MM/yyyy HH:mm");
   };
 
   // Redireciona se o usuário não estiver logado
@@ -215,17 +215,27 @@ const UserDetalhes = () => {
             }}
           />
 
-          {/* Exibe o Último Login */}
+          {/* Exibe as Datas */}
+          <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1, color: '#6A1B9A' }}>
+            Data de Criação:
+          </Typography>
+          <TextField
+            fullWidth
+            value={user.createdAt ? getFormattedDate(user.createdAt) : "Sem registro"}
+            margin="normal"
+            disabled
+            sx={{
+              backgroundColor: '#f5f5f5',
+              '& .MuiInputBase-root': { borderRadius: '4px' },
+            }}
+          />
+
           <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1, color: '#6A1B9A' }}>
             Último Login:
           </Typography>
           <TextField
             fullWidth
-            value={
-              user.lastLogin
-                ? getFormattedLastLogin(user.lastLogin)
-                : "Sem registro"
-            }
+            value={user.lastLogin ? getFormattedDate(user.lastLogin) : "Sem registro"}
             margin="normal"
             disabled
             sx={{

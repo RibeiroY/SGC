@@ -7,7 +7,7 @@ import Sidebar from '../components/shared/Sidebar';
 import { formatInTimeZone } from 'date-fns-tz';
 import { useUsers } from '../hooks/useUsers';
 import { db } from '../firebase/firebase';
-import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
+import {collection, getDocs } from 'firebase/firestore';
 
 const UserProfile = () => {
     const { currentUser } = useAuth();

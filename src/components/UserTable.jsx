@@ -16,31 +16,6 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import CustomSwitch from "./shared/CustomSwitch"; // Importando o CustomSwitch
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-
-// Função auxiliar para formatar o último login de forma segura
-const getFormattedLastLogin = (lastLogin) => {
-  if (!lastLogin) return "Sem registro";
-
-  let date;
-  // Verifica se já é uma instância de Date
-  if (lastLogin instanceof Date) {
-    date = lastLogin;
-  } else if (lastLogin && typeof lastLogin.toDate === "function") {
-    // Caso seja um Timestamp do Firestore
-    date = lastLogin.toDate();
-  } else {
-    date = new Date(lastLogin);
-  }
-
-  // Verifica se a data é válida
-  if (isNaN(date.getTime())) {
-    return "Sem registro";
-  }
-
-  return format(date, "dd/MM/yyyy HH:mm", { locale: ptBR });
-};
 
 const UserTable = ({ users, updateUserRole, toggleUserActive, updateUserSetor, currentUser }) => {
   const navigate = useNavigate();
@@ -70,8 +45,6 @@ const UserTable = ({ users, updateUserRole, toggleUserActive, updateUserSetor, c
             <TableCell sx={{ color: "white", fontWeight: "bold" }}>Nome</TableCell>
             <TableCell sx={{ color: "white", fontWeight: "bold" }}>Username</TableCell>
             <TableCell sx={{ color: "white", fontWeight: "bold" }}>Email</TableCell>
-            <TableCell sx={{ color: "white", fontWeight: "bold" }}>Data de Criação</TableCell>
-            <TableCell sx={{ color: "white", fontWeight: "bold" }}>Último Login</TableCell>
             <TableCell sx={{ color: "white", fontWeight: "bold" }}>Função</TableCell>
             <TableCell sx={{ color: "white", fontWeight: "bold" }}>Setor</TableCell>
             <TableCell sx={{ color: "white", fontWeight: "bold" }}>Ativo</TableCell>
@@ -80,8 +53,6 @@ const UserTable = ({ users, updateUserRole, toggleUserActive, updateUserSetor, c
         </TableHead>
         <TableBody>
           {users.map((user, index) => {
-            const formattedLastLogin = getFormattedLastLogin(user.lastLogin);
-
             return (
               <TableRow
                 key={user.id}
@@ -108,8 +79,6 @@ const UserTable = ({ users, updateUserRole, toggleUserActive, updateUserSetor, c
                     <Box>{truncateText(user.email || "N/A", isMobile ? 15 : 25)}</Box>
                   </Tooltip>
                 </TableCell>
-                <TableCell>{user.createdAt}</TableCell>
-                <TableCell>{user.lastLogin}</TableCell>
                 <TableCell>
                   <Select
                     value={user.role}

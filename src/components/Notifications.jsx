@@ -15,21 +15,25 @@ const Notifications = () => {
       console.log("Usuário não autenticado ou UID indefinido.");
       return;
     }
-
+  
     const notificationsRef = collection(db, 'notifications');
     const q = query(notificationsRef, where('userId', '==', currentUser.uid));
-
+  
     const unsubscribe = onSnapshot(
       q,
-      async (snapshot) => {  // Marcando a função como 'async' para permitir o uso de 'await'
-        const notificationsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      (snapshot) => {
+        const notificationsData = snapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          // Ordena as notificações do mais recente para o mais antigo
+          .sort((a, b) => b.timestamp?.toDate() - a.timestamp?.toDate());
+        
         setNotifications(notificationsData);
       },
       (error) => {
         console.error("Erro ao buscar notificações:", error);
       }
     );
-
+  
     return () => unsubscribe();
   }, [currentUser?.uid]);
 
