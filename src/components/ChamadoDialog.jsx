@@ -53,16 +53,21 @@ const ChamadoDialog = ({ open, onClose }) => {
     return !Object.values(newErrors).some((error) => error);
   };
 
-  const getUsername = async () => {
+  const getUserData = async () => {
     const usernameQuery = query(
       collection(db, 'usernames'),
       where('uid', '==', currentUser.uid)
     );
     const querySnapshot = await getDocs(usernameQuery);
     if (!querySnapshot.empty) {
-      return querySnapshot.docs[0].data().username;
+      const data = querySnapshot.docs[0].data();
+      return {
+        username: data.username,
+        role: data.role || 'user',
+        setor: data.setor || ''
+      };
     }
-    return '';
+    return { username: '', role: 'user', setor: '' };
   };
 
   const handleScan = useCallback(
@@ -90,7 +95,10 @@ const ChamadoDialog = ({ open, onClose }) => {
       where('code', '==', equipamento.trim())
     );
     const equipamentoSnapshot = await getDocs(equipamentoQuery);
-    return !equipamentoSnapshot.empty;
+    if (!equipamentoSnapshot.empty) {
+      return equipamentoSnapshot.docs[0].data();
+    }
+    return null;
   };
 
   const handleSubmit = async () => {
@@ -99,14 +107,20 @@ const ChamadoDialog = ({ open, onClose }) => {
       return;
     }
 
-    const equipamentoExists = await checkEquipamentoExists();
-    if (equipamentoExists) {
-      const username = await getUsername();
-      if (!username) {
+    const equipamentoData = await checkEquipamentoExists();
+    if (equipamentoData) {
+      const userData = await getUserData();
+      if (!userData.username) {
         enqueueSnackbar('Não foi possível obter o username.', { variant: 'error' });
         return;
       }
-      await addChamado(titulo, descricao, equipamento, tipo, username);
+
+      if (userData.role === 'user' && userData.setor !== equipamentoData.setor) {
+        enqueueSnackbar('Você não pode abrir chamados para equipamentos de outro setor.', { variant: 'error' });
+        return;
+      }
+
+      await addChamado(titulo, descricao, equipamento, tipo, userData.username);
       onClose();
     } else {
       enqueueSnackbar('O equipamento informado não foi encontrado em nossos registros.', { variant: 'error' });
