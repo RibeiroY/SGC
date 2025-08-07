@@ -23,6 +23,8 @@ Certifique-se também de ter uma conta Google ativa para uso do [Firebase](https
    npm install
 4. Após estes passos, atente-se para a seguinte situação: Você terá que utilizar o Firebase para o funcionamento das funções de autenticação e banco de dados em tempo real. Utilize arquivo .env para inserir seus parâmetros.
 5. Execute a aplicação:
-   ```npm start
+   ```bash
+   npm start
 Esta aplicação poderá ter muitas aprimorações através de trabalhos futuros conforme redigido na monografia.
+
 
