@@ -3,13 +3,6 @@
 Seja bem vindo ao Sistema de Gerenciamento de Chamados!! Este é um software desenvolvido como tema de meu Trabalho de Conclusão de Curso, cuja monografia está disponível no [link](https://www.monografias.ufop.br/handle/35400000/8116).
 
 
-## Índice
-
-- [Instalação](#instalação)
-- [Uso](#uso)
-- [Contribuição](#contribuição)
-- [Licença](#licença)
-
 ## Instalação
 
 ### Pré-requisitos
@@ -32,3 +25,4 @@ Certifique-se também de ter uma conta Google ativa para uso do [Firebase](https
 5. Execute a aplicação:
    ```npm start
 Esta aplicação poderá ter muitas aprimorações através de trabalhos futuros conforme redigido na monografia.
+
